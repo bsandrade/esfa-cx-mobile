@@ -12,8 +12,6 @@ import {useBluetooth} from '@src/hooks/bluetooth';
 import {useTheme} from 'styled-components/native';
 import {TextInput} from 'react-native';
 
-const straaingTeste =
-  'SAIA DAQUI NÃO\nSAIA DAQUI SIM\nSAI DAQUI COM CERTEZA\n SAIA DAQUI NÃO\n SAIA DAQUI SIM...\n...\nSAIA DAQUI NÃO\n SAIA DAQUI SIIIIIIIIIIIIMMM\nSIM, SIM, SAIA DAQUI SIM\n\n\n\n\n\n';
 export const ConnectScreen = (): JSX.Element => {
   const {
     devices,
@@ -21,7 +19,8 @@ export const ConnectScreen = (): JSX.Element => {
     scanDevices,
     connectDevice,
     disconnect,
-    printContent,
+    printString,
+    printBuffer,
   } = useBluetooth();
   const theme = useTheme();
   console.log('---------------------------------------');
@@ -37,7 +36,7 @@ export const ConnectScreen = (): JSX.Element => {
       />
       <ScanButton
         name={scanning ? 'Procurando...' : 'Procurar'}
-        onPress={scanDevices}
+        onPress={async () => await scanDevices()}
         Animation={
           scanning ? (
             <ScanningIndicator color={theme.colors.background} size={20} />
@@ -45,12 +44,12 @@ export const ConnectScreen = (): JSX.Element => {
         }
       />
       <DeviceList
-        data={Array.from(devices.values())}
+        data={devices}
         renderItem={it => (
           <DeviceItem
-            connectDevice={async () => await connectDevice(it.item.id)}
+            connectDevice={async () => await connectDevice(it.item.address)}
             disconnectDevice={async () => disconnect}
-            key={it.item.id}
+            key={it.item.address}
             device={it.item}
           />
         )}
@@ -69,7 +68,9 @@ export const ConnectScreen = (): JSX.Element => {
       />
       <ScanButton
         name={'testar'}
-        onPress={() => printContent(`${stringTeste}\n\n\n`)}
+        onPress={async () => {
+          printString('');
+        }}
       />
     </Container>
   );

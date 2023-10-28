@@ -11,11 +11,11 @@ import {
   DeviceSubInfo,
   DeviceSubInfoSection,
 } from './styles';
-import {Peripheral} from 'react-native-ble-manager';
 import {useTheme} from 'styled-components/native';
+import {Device} from '@src/hooks/bluetooth';
 
 type DeviceItemProps = {
-  device: Peripheral;
+  device: Device;
   connectDevice: () => void;
   disconnectDevice: () => void;
 };
@@ -45,15 +45,12 @@ export const DeviceItem = ({
         </DeviceHead>
         <DeviceSubInfoSection>
           <DeviceSubInfo isConnected={connected}>
-            {device.advertising?.localName ?? 'n/a localname'}
-          </DeviceSubInfo>
-          <DeviceSubInfo isConnected={connected}>
-            {device.rssi ?? 'n/a'}
+            {device.paired ? 'Pareado' : 'Não pareado'}
           </DeviceSubInfo>
         </DeviceSubInfoSection>
         <DeviceDetails>
           <DetailsInfo isConnected={connected}>
-            id: {device.id ?? 'id n/a'}
+            id: {device.address ?? 'id n/a'}
           </DetailsInfo>
           <ConnectionDetails>
             {!device.connecting && (
