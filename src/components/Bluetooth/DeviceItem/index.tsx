@@ -30,9 +30,9 @@ export const DeviceItem = ({
 
   return (
     <Container
-      connecting={device.connecting}
-      isConnected={connected}
       activeOpacity={0.4}
+      isConnected={connected}
+      isConnecting={device.connecting}
       onPress={() => {
         connected ? disconnectDevice() : connectDevice();
       }}

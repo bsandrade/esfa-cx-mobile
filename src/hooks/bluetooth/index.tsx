@@ -5,28 +5,23 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import {Buffer} from 'buffer';
+import {BluetoothManager} from '@brooons/react-native-bluetooth-escpos-printer';
+import {PaymentMethodType, PurchaseType} from '@src/types';
 import {
-  BluetoothEscposPrinter,
-  BluetoothManager,
-} from '@brooons/react-native-bluetooth-escpos-printer';
-import RNQRGenerator from 'rn-qr-generator';
-const x = {
-  found: [
-    {address: 'F8:53:AB:74:12:67', name: 'BT01'},
-    {address: '28:D3:A9:9C:C8:77', name: 'BT01'},
-    {address: '72:95:D9:66:7F:48', name: 'SP350'},
-  ],
-  paired: [
-    {address: '9C:19:C2:35:09:CF', name: 'Redmi AirDots 3'},
-    {address: '41:42:A0:DC:86:AC', name: 'Amvox 280 Black'},
-    {address: '70:70:AA:75:3D:78', name: 'Echo Dot-BWN'},
-    {address: 'B4:E6:2A:C3:9B:20', name: 'HB20'},
-    {address: '1C:93:C4:35:76:FD', name: 'Echo Dot-NJA'},
-    {address: 'DC:0D:30:61:5F:0A', name: 'KP-1025'},
-    {address: '54:15:89:03:DD:8B', name: 'JBL PartyBox 100'},
-  ],
-};
+  ALIGN,
+  printAlign,
+  printDivisor,
+  printHeader,
+  printLine,
+  printLines,
+  printQRCode,
+  printSpaces,
+  printerIsValid,
+} from './utils/print.utils';
+import {generateProductLine} from './utils/generate-product-line.utils';
+import {formatCurrency} from '@src/utils';
+import {useToast} from 'react-native-toast-notifications';
+
 type ScanDeviceOutput = {
   found: Array<Device>;
   paired: Array<Device>;
@@ -47,16 +42,12 @@ type BluetoothContextType = {
   connectDevice: (id: string) => Promise<void>;
   connectedDevice: Device | null;
   disconnect: () => void;
-  printString: (input: string) => Promise<void>;
-  printBuffer: (input: Buffer) => Promise<void>;
+  printPurchase: (input: PurchaseType) => Promise<void>;
 };
 
 type BluetoothProviderType = {
   children: ReactNode;
 };
-
-// const bluetoothManagerModule = NativeModules.BleManager;
-// const bluetoothManagerEmitter = new NativeEventEmitter(bluetoothManagerModule);
 
 const BluetoothContext = createContext({} as BluetoothContextType);
 
@@ -64,26 +55,22 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const [devices, setDevices] = useState<Array<Device>>([]);
   const [scanning, setScanning] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
+  const toast = useToast();
+
+  function showError(message: string) {
+    toast.show(message, {
+      type: 'danger',
+      placement: 'bottom',
+      duration: 4000,
+      animationType: 'slide-in',
+    });
+  }
 
   async function bootstrap() {
     const isEnabled = await BluetoothManager.checkBluetoothEnabled();
     if (!isEnabled) {
       console.debug('[bluetooth disabled] > enable...');
-      const devices = await BluetoothManager.enableBluetooth();
-
-      console.debug('devices');
-      console.debug(devices);
-      if (devices) {
-        // const response = devices
-        //   .reduce((acc, device) => {
-        //     try {
-        //       return [...acc, JSON.parse(device)];
-        //     } catch (e) {
-        //       return acc;
-        //     }
-        //   }, [])
-        //   .filter(device => device.address);
-      }
+      await BluetoothManager.enableBluetooth();
     } else {
       console.debug('[bluetooth enabled]');
     }
@@ -93,14 +80,18 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     bootstrap()
       .then()
       .catch(err => {
-        throw err;
+        showError(String(err?.message ?? err));
       });
   });
 
   const scanDevices = async () => {
+    console.debug('[ble-scanDevices]');
+    const bluetoothEnabled = await BluetoothManager.checkBluetoothEnabled();
+    if (!bluetoothEnabled) {
+      showError('Bluetooth desativado');
+    }
     setScanning(true);
     try {
-      console.debug('[ble-scanDevices]');
       const r = await BluetoothManager.scanDevices();
       const data = JSON.parse(r) as ScanDeviceOutput;
       const newDevices: Array<Device> = [];
@@ -130,7 +121,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
 
       setDevices(newDevices);
     } catch (err) {
-      throw err;
+      showError(String(err));
     } finally {
       setScanning(false);
     }
@@ -140,20 +131,17 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     const tempDevices = devices;
     const deviceIndex = tempDevices.findIndex(d => d.address === addres);
     if (deviceIndex < 0) {
-      throw new Error('Dispositivo não encontrado');
+    }
+    if (tempDevices[deviceIndex].connected) {
+      console.debug('[ble-device-already-connected]');
+      setConnectedDevice(tempDevices[deviceIndex]);
+      return;
     }
     try {
-      if (tempDevices[deviceIndex].connected) {
-        console.debug('[ble-device-already-connected]');
-        await BluetoothManager.disconnect(addres);
-        tempDevices[deviceIndex].connected = false;
+      if (connectedDevice) {
+        console.debug('[ble-already-have-connected-device]');
+        await BluetoothManager.disconnect(connectedDevice.address);
         setConnectedDevice(null);
-        setDevices(tempDevices);
-      } else {
-        if (connectedDevice) {
-          await BluetoothManager.disconnect(connectedDevice.address);
-          setConnectedDevice(null);
-        }
       }
 
       tempDevices[deviceIndex].connecting = true;
@@ -163,7 +151,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       tempDevices[deviceIndex].connected = true;
       setConnectedDevice(tempDevices[deviceIndex]);
     } catch (err) {
-      throw err;
+      showError(String(err));
     } finally {
       tempDevices[deviceIndex].connecting = false;
       setDevices(tempDevices);
@@ -173,7 +161,8 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const disconnect = async () => {
     console.debug('[ble-disconnect]');
     if (!connectedDevice) {
-      throw new Error('Não há dispositivos conectados');
+      showError('Não há dispositivos conectados');
+      return;
     }
     console.debug('[ble-disconnecting]');
     await BluetoothManager.disconnect(connectedDevice.address);
@@ -182,41 +171,46 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       d => d.address === connectedDevice.address,
     );
     if (deviceIndex < 0) {
-      throw new Error('Ocorreu um erro ao encontrar o dispositivo na lista');
+      showError('Ocorreu um erro ao encontrar o dispositivo na lista');
     }
     const tempDevices = devices;
     tempDevices[deviceIndex].connected = false;
     setDevices(tempDevices);
   };
 
-  const printString = async () => {
-    console.debug('[ble-print]');
-    // await BluetoothEscposPrinter.printText(
-    //   'Eduarda Jamile Gomes Santos\n\n\n',
-    //   {
-    //     encoding: 'UTF8',
-    //   },
-    // ); // OK
-    // await BluetoothEscposPrinter.printBarCode(
-    //   '123456789012',
-    //   BluetoothEscposPrinter.BARCODETYPE.JAN13,
-    //   3,
-    //   120,
-    //   0,
-    //   2,
-    // );
-    // await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
-
-    const {base64} = (await RNQRGenerator.generate({
-      value: 'http://www.brunosana.com.br',
-      height: 200,
-      width: 200,
-      correctionLevel: 'H',
-      base64: true,
-    })) as {base64: string};
-
-    await BluetoothEscposPrinter.printPic(base64, {width: 200, left: 85});
-    await BluetoothEscposPrinter.printText('\n', {});
+  const printPurchase = async (input: PurchaseType) => {
+    console.debug('[ble-print-purchase]');
+    const isValid = await printerIsValid();
+    if (!isValid || !connectedDevice) {
+      showError('Impressora não conectada / Erro ao conectar');
+      return;
+    }
+    await printHeader();
+    await printLines(
+      ...input.products.map(product => generateProductLine(product)),
+    );
+    await printDivisor(2);
+    const total = input.products.reduce((prev, curr) => {
+      return prev + curr.price;
+    }, 0);
+    await printLine(`Total: ${formatCurrency(total)} - ${input.paymentMethod}`);
+    if (input.paymentMethod === PaymentMethodType.MONEY && input.paidValue) {
+      await printLine(
+        `Dinheiro: ${formatCurrency(input.paidValue)}\nTroco: ${formatCurrency(
+          input.paidValue - total,
+        )}`,
+      );
+    }
+    await printDivisor(2);
+    await printLine(`Operador: ${input.user}`);
+    await printLine(`ID da operação:\n${input.id}`);
+    await printDivisor(2);
+    await printAlign(ALIGN.CENTER);
+    await printLine('Leia o QR Code e acesse o perfil do externato no insta:');
+    await printQRCode(
+      'https://www.instagram.com/externatosaofrancisco_oficial',
+    );
+    await printSpaces(2);
     console.debug('[ble-print-success]');
   };
 
@@ -227,10 +221,9 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
         connectedDevice,
         devices,
         disconnect,
-        printString,
+        printPurchase,
         scanDevices,
         scanning,
-        printBuffer: null as any,
       }}>
       {children}
     </BluetoothContext.Provider>

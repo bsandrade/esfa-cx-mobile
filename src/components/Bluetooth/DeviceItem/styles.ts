@@ -1,10 +1,14 @@
 import {TextApp} from '@components/Base/Text';
 import {resPX} from '@src/utils';
+import {TouchableOpacity} from 'react-native';
 import styled, {css} from 'styled-components/native';
 
 type ConnectedProps = {
   isConnected: boolean;
-  connecting?: boolean;
+};
+
+type ConnectedContainerProps = ConnectedProps & {
+  isConnecting: boolean;
 };
 
 const checkConnectedText = (connected: Boolean) => {
@@ -15,7 +19,7 @@ const checkConnectedText = (connected: Boolean) => {
   }
 };
 
-export const Container = styled.TouchableOpacity<ConnectedProps>`
+export const Container = styled(TouchableOpacity)<ConnectedContainerProps>`
   background-color: ${({theme}) => theme.colors.primary.main};
 
   ${({isConnected}) =>
@@ -24,8 +28,8 @@ export const Container = styled.TouchableOpacity<ConnectedProps>`
       background-color: ${({theme}) => theme.colors.text.low};
     `};
 
-  ${({connecting}) =>
-    connecting &&
+  ${({isConnecting}) =>
+    isConnecting &&
     css`
       background-color: ${({theme}) => theme.colors.text.warning};
     `};

@@ -11,6 +11,7 @@ import {DeviceItem} from '@components/Bluetooth/DeviceItem';
 import {useBluetooth} from '@src/hooks/bluetooth';
 import {useTheme} from 'styled-components/native';
 import {TextInput} from 'react-native';
+import {PaymentMethodType} from '@src/types';
 
 export const ConnectScreen = (): JSX.Element => {
   const {
@@ -19,8 +20,7 @@ export const ConnectScreen = (): JSX.Element => {
     scanDevices,
     connectDevice,
     disconnect,
-    printString,
-    printBuffer,
+    printPurchase,
   } = useBluetooth();
   const theme = useTheme();
   console.log('---------------------------------------');
@@ -69,7 +69,32 @@ export const ConnectScreen = (): JSX.Element => {
       <ScanButton
         name={'testar'}
         onPress={async () => {
-          printString('');
+          printPurchase({
+            id: 'asd',
+            paymentMethod: PaymentMethodType.MONEY,
+            user: 'Bruno Sana',
+            products: [
+              {
+                id: '1',
+                name: 'Coco',
+                price: 8.0,
+                quantity: 1,
+              },
+              {
+                id: '2',
+                name: 'Bala caramelizada de sabores diferentes',
+                price: 2.0,
+                quantity: 4,
+              },
+              {
+                id: '2',
+                name: 'Refrigerante',
+                price: 20.0,
+                quantity: 20,
+              },
+            ],
+            paidValue: 33,
+          });
         }}
       />
     </Container>
