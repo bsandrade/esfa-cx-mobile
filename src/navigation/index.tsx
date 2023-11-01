@@ -11,7 +11,7 @@ export const NavigationScreens = (): JSX.Element => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={NavigationType.CONNECT}
+        initialRouteName={NavigationType.HOME}
         screenOptions={{
           headerShown: false,
         }}>

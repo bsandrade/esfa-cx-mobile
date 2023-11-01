@@ -20,7 +20,7 @@ import {
 } from './utils/print.utils';
 import {generateProductLine} from './utils/generate-product-line.utils';
 import {formatCurrency} from '@src/utils';
-import {useToast} from 'react-native-toast-notifications';
+import {useToastApp} from '../toast-app';
 
 type ScanDeviceOutput = {
   found: Array<Device>;
@@ -55,16 +55,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const [devices, setDevices] = useState<Array<Device>>([]);
   const [scanning, setScanning] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
-  const toast = useToast();
-
-  function showError(message: string) {
-    toast.show(message, {
-      type: 'danger',
-      placement: 'bottom',
-      duration: 4000,
-      animationType: 'slide-in',
-    });
-  }
+  const {toastWarning} = useToastApp();
 
   async function bootstrap() {
     const isEnabled = await BluetoothManager.checkBluetoothEnabled();
@@ -80,7 +71,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     bootstrap()
       .then()
       .catch(err => {
-        showError(String(err?.message ?? err));
+        toastWarning(String(err?.message ?? err));
       });
   });
 
@@ -88,7 +79,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     console.debug('[ble-scanDevices]');
     const bluetoothEnabled = await BluetoothManager.checkBluetoothEnabled();
     if (!bluetoothEnabled) {
-      showError('Bluetooth desativado');
+      toastWarning('Bluetooth desativado');
     }
     setScanning(true);
     try {
@@ -121,7 +112,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
 
       setDevices(newDevices);
     } catch (err) {
-      showError(String(err));
+      toastWarning(String(err));
     } finally {
       setScanning(false);
     }
@@ -151,7 +142,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       tempDevices[deviceIndex].connected = true;
       setConnectedDevice(tempDevices[deviceIndex]);
     } catch (err) {
-      showError(String(err));
+      toastWarning(String(err));
     } finally {
       tempDevices[deviceIndex].connecting = false;
       setDevices(tempDevices);
@@ -161,7 +152,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const disconnect = async () => {
     console.debug('[ble-disconnect]');
     if (!connectedDevice) {
-      showError('Não há dispositivos conectados');
+      toastWarning('Não há dispositivos conectados');
       return;
     }
     console.debug('[ble-disconnecting]');
@@ -171,7 +162,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       d => d.address === connectedDevice.address,
     );
     if (deviceIndex < 0) {
-      showError('Ocorreu um erro ao encontrar o dispositivo na lista');
+      toastWarning('Ocorreu um erro ao encontrar o dispositivo na lista');
     }
     const tempDevices = devices;
     tempDevices[deviceIndex].connected = false;
@@ -182,7 +173,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     console.debug('[ble-print-purchase]');
     const isValid = await printerIsValid();
     if (!isValid || !connectedDevice) {
-      showError('Impressora não conectada / Erro ao conectar');
+      toastWarning('Impressora não conectada / Erro ao conectar');
       return;
     }
     await printHeader();

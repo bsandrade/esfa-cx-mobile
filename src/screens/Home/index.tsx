@@ -9,7 +9,7 @@ import {TopBar} from '@components/TopBar';
 import {Product} from '@components/Product';
 import {ProductType, ScreenProps} from '@src/types';
 import {DetailsModal} from '@components/Modals/DetailsModal';
-import {ToastAndroid} from 'react-native';
+import {useToastApp} from '@src/hooks/toast-app';
 
 const productsApi: ProductType[] = [
   {
@@ -46,6 +46,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
       quantity: 0,
     })),
   );
+  const {toastInfo} = useToastApp();
 
   const handleSetProducts = (index: number, number: number) => {
     const tempProducts = [...products];
@@ -57,11 +58,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
     if (products.some(p => p.quantity > 0)) {
       setShowDetails(true);
     } else {
-      ToastAndroid.showWithGravity(
-        'Nenhum produto selecionado',
-        ToastAndroid.LONG,
-        ToastAndroid.TOP,
-      );
+      toastInfo('Nenhum produto selecionado');
     }
   };
 
