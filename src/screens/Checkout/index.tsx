@@ -1,7 +1,7 @@
 import {
   NavigationType,
   PaymentMethodType,
-  ProductType,
+  ProductItemType,
   ScreenProps,
 } from '@src/types';
 import React, {useEffect, useState} from 'react';
@@ -22,23 +22,37 @@ import {
   PaidValueSection,
   PaidValueInfo,
   PaidValueInput,
+  FinishingIndicator,
 } from './styles';
-import {formatCurrency, sumTotalValue} from '@src/utils';
+import {
+  formatCurrency,
+  sumTotalValue,
+  translatedPaymentMethod,
+} from '@src/utils';
 import {TopBar} from '@components/TopBar';
 import {useTheme} from 'styled-components/native';
-import {TextInput, ToastAndroid} from 'react-native';
+import {TextInput} from 'react-native';
+import {useToastApp} from '@hooks/toast-app';
+import {useBluetooth} from '@hooks/bluetooth';
+import {useStorage} from '@hooks/storage';
 
 export const CheckoutScreen = ({
   navigation,
   route,
 }: ScreenProps): JSX.Element => {
-  const [products] = useState<ProductType[]>(route?.params.products || []);
+  const [products] = useState<ProductItemType[]>(route?.params.products || []);
   const [paymentMethod, setPaymentMethod] = useState<null | PaymentMethodType>(
     null,
   );
 
   const totalValue = sumTotalValue(products);
   const [paidValue, setPaidValue] = useState(totalValue);
+  const [printerIsValid, setPrinterIsValid] = useState<boolean>(true);
+  const [inProgressFinish, setInProgressFinish] = useState<boolean>(false);
+
+  const {toastWarning, toastError, toastInfo} = useToastApp();
+  const {printPurchase, validatePrinter} = useBluetooth();
+  const {savePurchase} = useStorage();
 
   const theme = useTheme();
   const iconSize = theme.icon.size.normal;
@@ -47,6 +61,11 @@ export const CheckoutScreen = ({
   useEffect(() => {
     if (!route?.params || route.params.products?.length === 0) {
       navigation?.navigate(NavigationType.HOME);
+    }
+    if (route?.params.goBack === NavigationType.CONNECT) {
+      validatePrinter()
+        .then(() => setPrinterIsValid(true))
+        .catch(() => setPrinterIsValid(false));
     }
   });
 
@@ -61,39 +80,45 @@ export const CheckoutScreen = ({
     }
   };
 
-  const translatedPaymentMethod = () => {
-    switch (paymentMethod) {
-      case PaymentMethodType.PIX:
-        return 'PIX';
-      case PaymentMethodType.CREDIT:
-        return 'CARTÃO';
-      case PaymentMethodType.MONEY:
-        return 'DINHEIRO';
-      default:
-        return 'N/A';
-    }
-  };
-
-  const handlePurchase = () => {
+  const handlePurchase = async () => {
     if (paymentMethod === null) {
-      ToastAndroid.showWithGravity(
-        'Método de pagamento não informado',
-        ToastAndroid.SHORT,
-        ToastAndroid.TOP,
+      toastWarning('Método de pagamento não informado');
+      return;
+    }
+
+    if (paidValue < totalValue) {
+      toastWarning(
+        `O Valor do pagamento precisa ser pelo menos ${formatCurrency(
+          totalValue,
+        )}`,
       );
-    } else {
-      if (paidValue < totalValue) {
-        ToastAndroid.showWithGravity(
-          `O Valor do pagamento precisa ser pelo menos ${formatCurrency(
-            totalValue,
-          )}`,
-          ToastAndroid.SHORT,
-          ToastAndroid.TOP,
-        );
-      } else {
-        navigation?.navigate(NavigationType.CONNECT);
-        // navigation?.goBack();
+      return;
+    }
+    setInProgressFinish(true);
+    try {
+      const newPurchase = savePurchase({
+        paymentMethod,
+        products,
+        user: 'bruno',
+        paidValue,
+      });
+      const isValid = await validatePrinter();
+      if (!isValid) {
+        toastError('Erro ao validar impressora...');
+        setPrinterIsValid(isValid);
+        return;
       }
+
+      await printPurchase(newPurchase);
+      toastInfo('Nota gerada com sucesso!');
+      navigation?.navigate(NavigationType.HOME, {
+        goBack: NavigationType.CHECKOUT,
+      });
+    } catch (err) {
+      console.error(err);
+      toastError('Erro no processamento, tente novamente');
+    } finally {
+      setInProgressFinish(false);
     }
   };
 
@@ -113,7 +138,7 @@ export const CheckoutScreen = ({
       <ProductSection
         data={products}
         renderItem={it => (
-          <ProductItem key={it.item.id}>
+          <ProductItem key={it.index}>
             <ProductInfo>
               {it.item.name}({it.item.quantity})
             </ProductInfo>
@@ -174,7 +199,7 @@ export const CheckoutScreen = ({
       <DetailsArea>
         <DetailsSection>
           <DetailsInfo>Método de pagamento:</DetailsInfo>
-          <DetailsInfo>{translatedPaymentMethod()}</DetailsInfo>
+          <DetailsInfo>{translatedPaymentMethod(paymentMethod)}</DetailsInfo>
         </DetailsSection>
         <CheckoutSeparator />
         <DetailsSection>
@@ -186,7 +211,27 @@ export const CheckoutScreen = ({
           <DetailsInfo>{formatCurrency(paidValue - totalValue)}</DetailsInfo>
         </DetailsSection>
       </DetailsArea>
-      <FinishButton name="FINALIZAR" onPress={() => handlePurchase()} />
+      {printerIsValid ? (
+        <FinishButton
+          name={inProgressFinish ? 'FINALIZANDO' : 'FINALIZAR'}
+          onPress={() => handlePurchase()}
+          Animation={
+            inProgressFinish ? (
+              <FinishingIndicator color={theme.colors.background} size={20} />
+            ) : undefined
+          }
+        />
+      ) : (
+        <FinishButton
+          name="CONECTAR"
+          onPress={() => {
+            navigation?.navigate(NavigationType.CONNECT, {
+              ...route?.params,
+              goBack: NavigationType.CHECKOUT,
+            });
+          }}
+        />
+      )}
     </Container>
   );
 };

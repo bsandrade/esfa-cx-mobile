@@ -1,4 +1,5 @@
 // import AppLegacy from '@src/AppLegacy';
+import 'react-native-get-random-values';
 import {Hooks} from '@src/hooks';
 import {NavigationScreens} from '@src/navigation';
 import {appEmitter} from '@src/shared/app-emitter';

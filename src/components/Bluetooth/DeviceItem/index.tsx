@@ -12,7 +12,7 @@ import {
   DeviceSubInfoSection,
 } from './styles';
 import {useTheme} from 'styled-components/native';
-import {Device} from '@src/hooks/bluetooth';
+import {Device} from '@hooks/bluetooth';
 
 type DeviceItemProps = {
   device: Device;

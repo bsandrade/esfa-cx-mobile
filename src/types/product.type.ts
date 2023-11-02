@@ -1,6 +1,8 @@
-export type ProductType = {
-  id: string;
+export type CreateProductType = {
   name: string;
   price: number;
-  quantity: number;
+};
+
+export type ProductType = CreateProductType & {
+  id: string;
 };

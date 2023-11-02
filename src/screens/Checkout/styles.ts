@@ -14,7 +14,6 @@ export const Container = styled(ScreenView)`
 `;
 
 export const FinishButton = styled(ButtonApp)`
-  justify-content: flex-end;
   margin-bottom: ${resPX(6)};
 `;
 
@@ -94,6 +93,10 @@ export const PaidValueInput = styled(CurrencyInput)`
   border: ${resPX(1)} solid ${({theme}) => theme.colors.text.primary};
   border-radius: ${({theme}) => theme.border.radius.mini};
   width: ${resPX(100)};
+`;
+
+export const FinishingIndicator = styled.ActivityIndicator`
+  margin-left: ${resPX(8)};
 `;
 
 export const DetailsInfo = styled(TextApp)``;

@@ -7,55 +7,55 @@ import {
 } from './styles';
 import {TopBar} from '@components/TopBar';
 import {Product} from '@components/Product';
-import {ProductType, ScreenProps} from '@src/types';
+import {ProductItemType, ScreenProps} from '@src/types';
 import {DetailsModal} from '@components/Modals/DetailsModal';
-import {useToastApp} from '@src/hooks/toast-app';
+import {useToastApp} from '@hooks/toast-app';
+import {useStorage} from '@hooks/storage';
 
-const productsApi: ProductType[] = [
+const productsApi = [
   {
     name: 'Salmão',
-    id: '1',
     price: 1.15,
-    quantity: 0,
   },
   {
     name: 'Sushi',
-    id: '2',
     price: 4.75,
-    quantity: 0,
   },
   {
     name: 'Pedra',
-    id: '3',
     price: 8,
     quantity: 0,
   },
   {
     name: 'Papel',
-    id: '4',
     price: 2,
-    quantity: 0,
   },
 ];
 
 export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
   const [showDetails, setShowDetails] = useState(false);
-  const [products, setProducts] = useState<ProductType[]>(
-    productsApi.map(p => ({
-      ...p,
-      quantity: 0,
-    })),
-  );
+  const {setProducts, getProducts} = useStorage();
+  const [productItems, setProductItems] = useState<ProductItemType[]>([]);
   const {toastInfo} = useToastApp();
 
+  const handleUpdateProducts = async () => {
+    setProducts(productsApi);
+    setProductItems(
+      getProducts().map(product => ({
+        ...product,
+        quantity: 0,
+      })),
+    );
+  };
+
   const handleSetProducts = (index: number, number: number) => {
-    const tempProducts = [...products];
+    const tempProducts = [...productItems];
     tempProducts[index].quantity = number;
     setProducts(tempProducts);
   };
 
   const handleShowDetailsModal = () => {
-    if (products.some(p => p.quantity > 0)) {
+    if (productItems.some(p => p.quantity > 0)) {
       setShowDetails(true);
     } else {
       toastInfo('Nenhum produto selecionado');
@@ -66,11 +66,12 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
     <Container>
       <TopBar
         name="Ordem"
-        leftIconName="chevron-left"
+        leftIconName="autorenew"
         rightIconName="account-circle"
+        onClickLeftIcon={handleUpdateProducts}
       />
       <ProductList
-        data={products}
+        data={productItems}
         ItemSeparatorComponent={ProductSeparator}
         renderItem={it => {
           return (
@@ -88,7 +89,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
       />
       <HomeCheckoutButton name="Detalhes" onPress={handleShowDetailsModal} />
       <DetailsModal
-        products={products.filter(p => p.quantity > 0)}
+        products={productItems.filter(p => p.quantity > 0)}
         closeModal={() => setShowDetails(false)}
         showModal={showDetails}
         navigation={navigation}

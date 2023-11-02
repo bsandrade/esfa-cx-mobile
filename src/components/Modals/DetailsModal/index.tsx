@@ -16,13 +16,13 @@ import {
 import {TouchableIcon} from '@components/Base/TouchableIcon';
 import {useTheme} from 'styled-components/native';
 import {formatCurrency, sumTotalValue} from '@src/utils';
-import {NavigationType, ProductType} from '@src/types';
+import {NavigationType, ProductItemType} from '@src/types';
 import {NavigationProp} from '@react-navigation/native';
 
 type DetailsModalProps = {
   showModal: boolean;
   closeModal: () => void;
-  products: ProductType[];
+  products: ProductItemType[];
   navigation?: NavigationProp<any>;
 };
 

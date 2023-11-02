@@ -12,6 +12,7 @@ module.exports = {
           '@animations': './src/animations',
           '@hooks': './src/hooks',
           '@navigation': './src/navigation',
+          '@utils': './src/utils',
         },
       },
     ],

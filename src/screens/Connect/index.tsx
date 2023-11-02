@@ -8,12 +8,22 @@ import {
 } from './styles';
 import {TopBar} from '@components/TopBar';
 import {DeviceItem} from '@components/Bluetooth/DeviceItem';
-import {useBluetooth} from '@src/hooks/bluetooth';
+import {useBluetooth} from '@hooks/bluetooth';
 import {useTheme} from 'styled-components/native';
+import {NavigationType, ScreenProps} from '@src/types';
 
-export const ConnectScreen = (): JSX.Element => {
-  const {devices, scanning, scanDevices, connectDevice, disconnect} =
-    useBluetooth();
+export const ConnectScreen = ({
+  navigation,
+  route,
+}: ScreenProps): JSX.Element => {
+  const {
+    devices,
+    scanning,
+    scanDevices,
+    connectDevice,
+    disconnect,
+    connectedDevice,
+  } = useBluetooth();
   const theme = useTheme();
 
   return (
@@ -44,6 +54,18 @@ export const ConnectScreen = (): JSX.Element => {
         )}
         ItemSeparatorComponent={DeviceSeparator}
       />
+      {connectedDevice && (
+        <ScanButton
+          name="Voltar"
+          onPress={() => {
+            const navigateRoute = route?.params.goBack;
+            navigation?.navigate(navigateRoute, {
+              ...route?.params,
+              goBack: NavigationType.CONNECT,
+            });
+          }}
+        />
+      )}
     </Container>
   );
 };

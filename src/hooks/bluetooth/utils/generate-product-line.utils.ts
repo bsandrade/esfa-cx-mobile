@@ -3,7 +3,7 @@ import {formatCurrency} from '@src/utils';
 import {MAX_CHARS_PER_LINE} from './constants.utils';
 
 export function generateProductLine(input: ProductType): string {
-  const price = formatCurrency(input.price);
+  const price = formatCurrency(input.quantity * input.price);
   const remainingLines = MAX_CHARS_PER_LINE - price.length - 6;
   let productName = input.name;
   if (productName.length > remainingLines) {

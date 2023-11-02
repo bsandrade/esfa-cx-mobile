@@ -3,6 +3,7 @@ import {Container} from './styles';
 import {IconButtonProps} from 'react-native-vector-icons/Icon';
 import {Icon} from 'react-native-elements';
 import {FontAwesome6} from './SubCategories/FontAwesome6';
+import {AntDesign} from './SubCategories/AntDesign';
 
 export type TouchableIconProps = IconButtonProps & {
   onPress?: () => void;
@@ -22,4 +23,5 @@ const TouchableIconComponent = ({
 export const TouchableIcon = {
   Default: TouchableIconComponent,
   Awesome: FontAwesome6,
+  AntDesign,
 };

@@ -38,11 +38,13 @@ export type Device = {
 type BluetoothContextType = {
   devices: Array<Device>;
   scanning: boolean;
+  isPrinting: boolean;
   scanDevices: () => Promise<void>;
   connectDevice: (id: string) => Promise<void>;
   connectedDevice: Device | null;
   disconnect: () => void;
   printPurchase: (input: PurchaseType) => Promise<void>;
+  validatePrinter: () => Promise<boolean>;
 };
 
 type BluetoothProviderType = {
@@ -54,8 +56,9 @@ const BluetoothContext = createContext({} as BluetoothContextType);
 const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const [devices, setDevices] = useState<Array<Device>>([]);
   const [scanning, setScanning] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
-  const {toastWarning} = useToastApp();
+  const {toastWarning, toastError} = useToastApp();
 
   async function bootstrap() {
     const isEnabled = await BluetoothManager.checkBluetoothEnabled();
@@ -169,40 +172,60 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     setDevices(tempDevices);
   };
 
-  const printPurchase = async (input: PurchaseType) => {
-    console.debug('[ble-print-purchase]');
+  const validatePrinter = async () => {
     const isValid = await printerIsValid();
     if (!isValid || !connectedDevice) {
+      return false;
+    }
+    return true;
+  };
+
+  const printPurchase = async (input: PurchaseType) => {
+    console.debug('[ble-print-purchase]');
+    const isValid = await validatePrinter();
+    if (!isValid) {
       toastWarning('Impressora não conectada / Erro ao conectar');
       return;
     }
-    await printHeader();
-    await printLines(
-      ...input.products.map(product => generateProductLine(product)),
-    );
-    await printDivisor(2);
-    const total = input.products.reduce((prev, curr) => {
-      return prev + curr.price;
-    }, 0);
-    await printLine(`Total: ${formatCurrency(total)} - ${input.paymentMethod}`);
-    if (input.paymentMethod === PaymentMethodType.MONEY && input.paidValue) {
-      await printLine(
-        `Dinheiro: ${formatCurrency(input.paidValue)}\nTroco: ${formatCurrency(
-          input.paidValue - total,
-        )}`,
-      );
+    try {
+      setIsPrinting(true);
+      // await printHeader();
+      // await printLines(
+      //   ...input.products.map(product => generateProductLine(product)),
+      // );
+      // await printDivisor(2);
+      // const total = input.products.reduce((prev, curr) => {
+      //   return prev + curr.quantity * curr.price;
+      // }, 0);
+      // await printLine(
+      //   `Total: ${formatCurrency(total)} - ${input.paymentMethod}`,
+      // );
+      // if (input.paymentMethod === PaymentMethodType.MONEY && input.paidValue) {
+      //   await printLine(
+      //     `Dinheiro: ${formatCurrency(
+      //       input.paidValue,
+      //     )}\nTroco: ${formatCurrency(input.paidValue - total)}`,
+      //   );
+      // }
+      await printDivisor(2);
+      // await printLine(`Operador: ${input.user}`);
+      // await printLine(`ID da operação:\n${input.id}`);
+      // await printDivisor(2);
+      // await printAlign(ALIGN.CENTER);
+      // await printLine(
+      //   'Leia o QR Code e acesse o perfil do externato no insta:',
+      // );
+      // await printQRCode(
+      //   'https://www.instagram.com/externatosaofrancisco_oficial',
+      // );
+      // await printSpaces(2);
+      // setIsPrinting(false);
+      console.debug('[ble-print-success]');
+    } catch (err) {
+      toastError(String(err));
+    } finally {
+      setIsPrinting(false);
     }
-    await printDivisor(2);
-    await printLine(`Operador: ${input.user}`);
-    await printLine(`ID da operação:\n${input.id}`);
-    await printDivisor(2);
-    await printAlign(ALIGN.CENTER);
-    await printLine('Leia o QR Code e acesse o perfil do externato no insta:');
-    await printQRCode(
-      'https://www.instagram.com/externatosaofrancisco_oficial',
-    );
-    await printSpaces(2);
-    console.debug('[ble-print-success]');
   };
 
   return (
@@ -215,6 +238,8 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
         printPurchase,
         scanDevices,
         scanning,
+        isPrinting,
+        validatePrinter,
       }}>
       {children}
     </BluetoothContext.Provider>

@@ -1,5 +1,5 @@
-import {ProductType} from '@src/types';
+import {ProductItemType} from '@src/types';
 
-export const sumTotalValue = (products: ProductType[]) => {
+export const sumTotalValue = (products: ProductItemType[]) => {
   return products.reduce((prev, curr) => prev + curr.price * curr.quantity, 0);
 };
