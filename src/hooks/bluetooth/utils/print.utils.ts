@@ -1,5 +1,6 @@
 import {BluetoothEscposPrinter} from '@brooons/react-native-bluetooth-escpos-printer';
 import RNQRGenerator from 'rn-qr-generator';
+import {PrintPurchaseType} from '..';
 
 export enum ALIGN {
   LEFT = 0,
@@ -56,10 +57,17 @@ export const printQRCode = async (content: string) => {
   await BluetoothEscposPrinter.printPic(base64, {width: 200, left: 85});
 };
 
-export const printHeader = async () => {
+export const printHeader = async (input: PrintPurchaseType) => {
   await printAlign(ALIGN.CENTER);
   await printLine('Externato São Francisco de Assis');
   await printDivisor();
+  if (input.reprint) {
+    await printLine('REIMPRESSÃO');
+    await printLine(
+      `Data original:\n${input.createdAt.toLocaleString('pt-br')}`,
+      2,
+    );
+  }
   await printAlign(ALIGN.LEFT);
   await printLine('Av. Dr. Edelzio Vieira de Melo, 585 - Suíssa');
   await printLine('CNPJ:  10.970.689/0010-21');

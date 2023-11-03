@@ -1,8 +1,8 @@
-import {ProductType} from '@src/types';
+import {ProductItemType} from '@src/types';
 import {formatCurrency} from '@src/utils';
 import {MAX_CHARS_PER_LINE} from './constants.utils';
 
-export function generateProductLine(input: ProductType): string {
+export function generateProductLine(input: ProductItemType): string {
   const price = formatCurrency(input.quantity * input.price);
   const remainingLines = MAX_CHARS_PER_LINE - price.length - 6;
   let productName = input.name;

@@ -8,6 +8,7 @@ export class PurchaseSchema extends Realm.Object<PurchaseSchema> {
   products!: ProductItemSchema[];
   paymentMethod!: PaymentMethodType;
   user!: string;
+  createdAt!: Date;
   paidValue?: number;
   static schema: ObjectSchema = {
     name: Schemas.PURCHASE,
@@ -17,6 +18,7 @@ export class PurchaseSchema extends Realm.Object<PurchaseSchema> {
       paymentMethod: 'string',
       user: 'string',
       paidValue: 'float?',
+      createdAt: 'date',
     },
     primaryKey: 'id',
   };

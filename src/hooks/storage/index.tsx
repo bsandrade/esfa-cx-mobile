@@ -43,6 +43,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
       products: productItems,
       user,
       paidValue,
+      createdAt: new Date(),
       id: new Realm.BSON.UUID(),
     };
     realm.write(() => {
@@ -63,6 +64,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         products: purchase.products,
         user: purchase.user,
         paidValue: purchase.paidValue,
+        createdAt: purchase.createdAt,
       });
     });
     return response;

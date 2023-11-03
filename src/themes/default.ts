@@ -43,6 +43,7 @@ export const DefaultCustomTheme = {
       default: 16,
       normal: 18,
       bigger: 22,
+      max: 28,
     },
     weight: {
       bold: 'Roboto-Bold',

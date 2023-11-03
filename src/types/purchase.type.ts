@@ -9,4 +9,5 @@ export type CreatePurchaseType = {
 };
 export type PurchaseType = CreatePurchaseType & {
   id: string;
+  createdAt: Date;
 };

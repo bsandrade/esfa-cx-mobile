@@ -96,18 +96,19 @@ export const CheckoutScreen = ({
     }
     setInProgressFinish(true);
     try {
-      const newPurchase = savePurchase({
-        paymentMethod,
-        products,
-        user: 'bruno',
-        paidValue,
-      });
       const isValid = await validatePrinter();
       if (!isValid) {
         toastError('Erro ao validar impressora...');
         setPrinterIsValid(isValid);
         return;
       }
+
+      const newPurchase = savePurchase({
+        paymentMethod,
+        products,
+        user: 'bruno',
+        paidValue,
+      });
 
       await printPurchase(newPurchase);
       toastInfo('Nota gerada com sucesso!');

@@ -19,7 +19,7 @@ import {
   printerIsValid,
 } from './utils/print.utils';
 import {generateProductLine} from './utils/generate-product-line.utils';
-import {formatCurrency} from '@src/utils';
+import {formatCurrency, translatedPaymentMethod} from '@src/utils';
 import {useToastApp} from '../toast-app';
 
 type ScanDeviceOutput = {
@@ -35,6 +35,8 @@ export type Device = {
   connecting: boolean;
 };
 
+export type PrintPurchaseType = PurchaseType & {reprint?: boolean};
+
 type BluetoothContextType = {
   devices: Array<Device>;
   scanning: boolean;
@@ -43,7 +45,7 @@ type BluetoothContextType = {
   connectDevice: (id: string) => Promise<void>;
   connectedDevice: Device | null;
   disconnect: () => void;
-  printPurchase: (input: PurchaseType) => Promise<void>;
+  printPurchase: (input: PrintPurchaseType) => Promise<void>;
   validatePrinter: () => Promise<boolean>;
 };
 
@@ -180,7 +182,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     return true;
   };
 
-  const printPurchase = async (input: PurchaseType) => {
+  const printPurchase = async (input: PrintPurchaseType) => {
     console.debug('[ble-print-purchase]');
     const isValid = await validatePrinter();
     if (!isValid) {
@@ -189,37 +191,39 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     }
     try {
       setIsPrinting(true);
-      // await printHeader();
-      // await printLines(
-      //   ...input.products.map(product => generateProductLine(product)),
-      // );
-      // await printDivisor(2);
-      // const total = input.products.reduce((prev, curr) => {
-      //   return prev + curr.quantity * curr.price;
-      // }, 0);
-      // await printLine(
-      //   `Total: ${formatCurrency(total)} - ${input.paymentMethod}`,
-      // );
-      // if (input.paymentMethod === PaymentMethodType.MONEY && input.paidValue) {
-      //   await printLine(
-      //     `Dinheiro: ${formatCurrency(
-      //       input.paidValue,
-      //     )}\nTroco: ${formatCurrency(input.paidValue - total)}`,
-      //   );
-      // }
+      await printHeader(input);
+      await printLines(
+        ...input.products.map(product => generateProductLine(product)),
+      );
       await printDivisor(2);
-      // await printLine(`Operador: ${input.user}`);
-      // await printLine(`ID da operação:\n${input.id}`);
-      // await printDivisor(2);
-      // await printAlign(ALIGN.CENTER);
-      // await printLine(
-      //   'Leia o QR Code e acesse o perfil do externato no insta:',
-      // );
-      // await printQRCode(
-      //   'https://www.instagram.com/externatosaofrancisco_oficial',
-      // );
-      // await printSpaces(2);
-      // setIsPrinting(false);
+      const total = input.products.reduce((prev, curr) => {
+        return prev + curr.quantity * curr.price;
+      }, 0);
+      await printLine(
+        `Total: ${formatCurrency(total)} - ${translatedPaymentMethod(
+          input.paymentMethod,
+        )}`,
+      );
+      if (input.paymentMethod === PaymentMethodType.MONEY && input.paidValue) {
+        await printLine(
+          `Dinheiro: ${formatCurrency(
+            input.paidValue,
+          )}\nTroco: ${formatCurrency(input.paidValue - total)}`,
+        );
+      }
+      await printDivisor(2);
+      await printLine(`Operador: ${input.user}`);
+      await printLine(`ID da operação:\n${input.id}`);
+      await printDivisor(2);
+      await printAlign(ALIGN.CENTER);
+      await printLine(
+        'Leia o QR Code e acesse o perfil do externato no insta:',
+      );
+      await printQRCode(
+        'https://www.instagram.com/externatosaofrancisco_oficial',
+      );
+      await printSpaces(2);
+      setIsPrinting(false);
       console.debug('[ble-print-success]');
     } catch (err) {
       toastError(String(err));

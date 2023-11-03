@@ -7,35 +7,39 @@ import {
 } from './styles';
 import {TopBar} from '@components/TopBar';
 import {Product} from '@components/Product';
-import {ProductItemType, ScreenProps} from '@src/types';
+import {NavigationType, ProductItemType, ScreenProps} from '@src/types';
 import {DetailsModal} from '@components/Modals/DetailsModal';
 import {useToastApp} from '@hooks/toast-app';
 import {useStorage} from '@hooks/storage';
 
 const productsApi = [
   {
-    name: 'Salmão',
-    price: 1.15,
-  },
-  {
-    name: 'Sushi',
+    name: 'Coxinha',
     price: 4.75,
   },
   {
-    name: 'Pedra',
-    price: 8,
-    quantity: 0,
+    name: 'Refrigerante',
+    price: 5.0,
   },
   {
-    name: 'Papel',
-    price: 2,
+    name: 'Suco',
+    price: 2.5,
+  },
+  {
+    name: 'Pastel de Frango',
+    price: 4.75,
+  },
+  {
+    name: 'Amendoim Torrado',
+    price: 1.2,
   },
 ];
 
 export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
   const [showDetails, setShowDetails] = useState(false);
-  const {setProducts, getProducts} = useStorage();
   const [productItems, setProductItems] = useState<ProductItemType[]>([]);
+
+  const {setProducts, getProducts} = useStorage();
   const {toastInfo} = useToastApp();
 
   const handleUpdateProducts = async () => {
@@ -69,6 +73,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
         leftIconName="autorenew"
         rightIconName="account-circle"
         onClickLeftIcon={handleUpdateProducts}
+        onClickRightIcon={() => navigation?.navigate(NavigationType.PROFILE)}
       />
       <ProductList
         data={productItems}

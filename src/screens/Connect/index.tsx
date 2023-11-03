@@ -58,7 +58,8 @@ export const ConnectScreen = ({
         <ScanButton
           name="Voltar"
           onPress={() => {
-            const navigateRoute = route?.params.goBack;
+            const navigateRoute =
+              route?.params?.goBack ?? NavigationType.PROFILE;
             navigation?.navigate(navigateRoute, {
               ...route?.params,
               goBack: NavigationType.CONNECT,

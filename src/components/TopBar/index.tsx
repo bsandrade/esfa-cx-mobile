@@ -21,7 +21,7 @@ export const TopBar = ({
 }: TopBarProps): JSX.Element => {
   const theme = useTheme() as DefaultTheme;
   const iconColor = theme.colors.text.primary;
-  const iconSize = theme.font.size.bigger;
+  const iconSize = theme.icon.size.normal;
 
   return (
     <Container>

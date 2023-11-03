@@ -14,5 +14,4 @@ export const Container = styled.TouchableOpacity`
 export const ButtomText = styled(TextApp)`
   text-align: center;
   font-size: ${({theme}) => resPX(theme.font.size.small)};
-  color: ${({theme}) => theme.colors.background};
 `;
