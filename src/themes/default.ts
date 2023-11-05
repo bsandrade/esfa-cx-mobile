@@ -37,6 +37,7 @@ export const DefaultCustomTheme = {
   },
   icon: {
     size: {
+      giant: 50,
       bigger: 40,
       normal: 35,
       tiny: 30,

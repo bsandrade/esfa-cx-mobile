@@ -8,16 +8,17 @@ import {NavigationType} from '@src/types';
 import {ProfileScreen} from '@screens/Profile';
 import {LoginScreen} from '@screens/Login/intex';
 import {useSession} from '@src/hooks/session';
+import {DashboardScreen} from '@screens/Dashboard';
 
 const Stack = createNativeStackNavigator();
 export const NavigationScreens = (): JSX.Element => {
   const {isAuthenticated} = useSession();
   return (
     <>
-      {isAuthenticated ? (
+      {!isAuthenticated ? (
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName={NavigationType.PROFILE}
+            initialRouteName={NavigationType.DASHBOARD}
             screenOptions={{
               headerShown: false,
             }}>
@@ -33,6 +34,10 @@ export const NavigationScreens = (): JSX.Element => {
             <Stack.Screen
               name={NavigationType.PROFILE}
               component={ProfileScreen}
+            />
+            <Stack.Screen
+              name={NavigationType.DASHBOARD}
+              component={DashboardScreen}
             />
           </Stack.Navigator>
         </NavigationContainer>

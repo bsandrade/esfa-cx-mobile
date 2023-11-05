@@ -4,4 +4,5 @@ export enum NavigationType {
   CONNECT = 'connect',
   PROFILE = 'profile',
   LOGIN = 'login',
+  DASHBOARD = 'dashboard',
 }
