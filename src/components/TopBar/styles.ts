@@ -14,4 +14,5 @@ export const Container = styled.View`
 
 export const Title = styled(TextApp)`
   font-size: ${({theme}) => resPX(theme.font.size.max)};
+  margin: 0 auto;
 `;

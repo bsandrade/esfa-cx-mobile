@@ -133,8 +133,13 @@ export const CheckoutScreen = ({
         name="Checkout"
         leftIconName="chevron-left"
         onClickLeftIcon={() => navigation?.goBack()}
-        rightIconName="account-circle"
-        onClickRightIcon={() => {}}
+        rightIconName="bluetooth"
+        onClickRightIcon={() =>
+          navigation?.navigate(NavigationType.CONNECT, {
+            ...route?.params,
+            goBack: NavigationType.CHECKOUT,
+          })
+        }
       />
       <ProductSection
         data={products}

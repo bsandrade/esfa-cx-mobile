@@ -28,11 +28,7 @@ export const ConnectScreen = ({
 
   return (
     <Container>
-      <TopBar
-        rightIconName="close"
-        leftIconName="close"
-        name="Conectar a uma Impressora"
-      />
+      <TopBar name="Conectar-se à Impressora" />
       <ScanButton
         name={scanning ? 'Procurando...' : 'Procurar'}
         onPress={async () => await scanDevices()}
@@ -47,7 +43,7 @@ export const ConnectScreen = ({
         renderItem={it => (
           <DeviceItem
             connectDevice={async () => await connectDevice(it.item.address)}
-            disconnectDevice={async () => disconnect}
+            disconnectDevice={disconnect}
             key={it.item.address}
             device={it.item}
           />
