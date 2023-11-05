@@ -6,6 +6,8 @@ import {ToastAppProvider} from './toast-app';
 import {ToastProvider} from 'react-native-toast-notifications';
 import {RealmProvider} from './storage/realm';
 import {StorageProvider} from './storage';
+import {SessionProvider} from './session';
+import {SecretsProvider} from './secrets';
 type HooksProps = {
   children: ReactNode;
 };
@@ -14,15 +16,19 @@ export const Hooks = ({children}: HooksProps): JSX.Element => {
   return (
     <>
       <ThemeProvider theme={DefaultCustomTheme}>
-        <ToastProvider>
-          <ToastAppProvider>
-            <RealmProvider>
-              <StorageProvider>
-                <BluetoothProvider>{children}</BluetoothProvider>
-              </StorageProvider>
-            </RealmProvider>
-          </ToastAppProvider>
-        </ToastProvider>
+        <SecretsProvider>
+          <ToastProvider>
+            <ToastAppProvider>
+              <SessionProvider>
+                <RealmProvider>
+                  <StorageProvider>
+                    <BluetoothProvider>{children}</BluetoothProvider>
+                  </StorageProvider>
+                </RealmProvider>
+              </SessionProvider>
+            </ToastAppProvider>
+          </ToastProvider>
+        </SecretsProvider>
       </ThemeProvider>
     </>
   );

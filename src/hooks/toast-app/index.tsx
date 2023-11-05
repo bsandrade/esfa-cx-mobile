@@ -4,6 +4,7 @@ import {useToast} from 'react-native-toast-notifications';
 type ToastAppContextType = {
   toastError: (input: string) => void;
   toastWarning: (input: string) => void;
+  toastSuccess: (input: string) => void;
   toastInfo: (input: string) => void;
 };
 
@@ -34,6 +35,15 @@ const ToastAppProvider = ({children}: ToastAppProviderType): JSX.Element => {
     });
   }
 
+  function toastSuccess(message: string) {
+    toast.show(message, {
+      type: 'success',
+      placement: 'bottom',
+      duration: 4000,
+      animationType: 'slide-in',
+    });
+  }
+
   function toastWarning(message: string) {
     toast.show(message, {
       type: 'warning',
@@ -47,6 +57,7 @@ const ToastAppProvider = ({children}: ToastAppProviderType): JSX.Element => {
     <ToastAppContext.Provider
       value={{
         toastError,
+        toastSuccess,
         toastInfo,
         toastWarning,
       }}>

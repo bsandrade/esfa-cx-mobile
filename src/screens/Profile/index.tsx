@@ -19,8 +19,7 @@ import {useToastApp} from '@src/hooks/toast-app';
 import {Purchase} from '@components/Purchase';
 import {StatusBar} from 'react-native';
 import {PurchaseModal} from '@components/Modals/PurchaseModal';
-
-const imageUri = {uri: 'https://avatars.githubusercontent.com/u/39919020?v=4'};
+import {useSession} from '@src/hooks/session';
 
 export const ProfileScreen = ({navigation}: ScreenProps): JSX.Element => {
   const [purchases, setPurchases] = useState<Array<PurchaseType>>([]);
@@ -31,6 +30,7 @@ export const ProfileScreen = ({navigation}: ScreenProps): JSX.Element => {
 
   const {getPurchases} = useStorage();
   const {toastInfo} = useToastApp();
+  const {signOut, userData} = useSession();
 
   const handleLoadPurchases = () => {
     const purchasesHistoric = getPurchases();
@@ -65,10 +65,18 @@ export const ProfileScreen = ({navigation}: ScreenProps): JSX.Element => {
             opacity: 0.4,
           }}>
           <ProfilePhotoArea>
-            <ProfilePhoto source={imageUri} />
+            <ProfilePhoto
+              source={
+                userData?.profilePhoto
+                  ? {
+                      uri: userData.profilePhoto,
+                    }
+                  : require('../../assets/logo_externato.png')
+              }
+            />
           </ProfilePhotoArea>
-          <ProfileName>Bruno Sana</ProfileName>
-          <ProfileEmail>brunosanadev@gmail.com</ProfileEmail>
+          <ProfileName>{userData?.name ?? 'Sem nome'}</ProfileName>
+          <ProfileEmail>{userData?.email ?? 'Sem email'}</ProfileEmail>
         </ProfileAreaBackground>
       </ProfileArea>
       <ProfileOptions>
@@ -76,7 +84,7 @@ export const ProfileScreen = ({navigation}: ScreenProps): JSX.Element => {
           name="Início"
           onPress={() => navigation?.navigate(NavigationType.HOME)}
         />
-        <ProfileButton name="Sair" onPress={() => ({})} />
+        <ProfileButton name="Sair" onPress={signOut} />
       </ProfileOptions>
       <PurchaseArea>
         <ProfileButton name="Carregar Compras" onPress={handleLoadPurchases} />

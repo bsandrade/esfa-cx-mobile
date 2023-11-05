@@ -5,6 +5,12 @@ export const DefaultCustomTheme = {
       main: '#6A097D',
       contrastText: '#F1D4D4',
     },
+    google: {
+      blue: '#4285F4',
+      red: '#DB4437',
+      yellow: '#F4B400',
+      green: '#0F9D58',
+    },
     text: {
       primary: '#42426A',
       low: '#CCC',
@@ -33,6 +39,7 @@ export const DefaultCustomTheme = {
     size: {
       bigger: 40,
       normal: 35,
+      tiny: 30,
     },
   },
   font: {

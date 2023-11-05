@@ -3,4 +3,5 @@ export enum NavigationType {
   CHECKOUT = 'checkout',
   CONNECT = 'connect',
   PROFILE = 'profile',
+  LOGIN = 'login',
 }
