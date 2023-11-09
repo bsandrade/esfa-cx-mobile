@@ -15,12 +15,14 @@ import {
   printLine,
   printLines,
   printQRCode,
+  printReportHeader,
   printSpaces,
   printerIsValid,
 } from './utils/print.utils';
 import {generateProductLine} from './utils/generate-product-line.utils';
 import {formatCurrency, translatedPaymentMethod} from '@src/utils';
 import {useToastApp} from '../toast-app';
+import {useSession} from '../session';
 
 type ScanDeviceOutput = {
   found: Array<Device>;
@@ -46,6 +48,7 @@ type BluetoothContextType = {
   connectedDevice: Device | null;
   disconnect: () => void;
   printPurchase: (input: PrintPurchaseType) => Promise<void>;
+  printReport: (input: Array<PurchaseType>) => Promise<void>;
   validatePrinter: () => Promise<boolean>;
 };
 
@@ -61,6 +64,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const [isPrinting, setIsPrinting] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const {toastWarning, toastError} = useToastApp();
+  const {userData} = useSession();
 
   async function bootstrap() {
     const isEnabled = await BluetoothManager.checkBluetoothEnabled();
@@ -182,6 +186,75 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     return true;
   };
 
+  const handleGetTotal = (input: Array<PurchaseType>) => {
+    return input.reduce((prev, curr) => {
+      const tempTotal = curr.products.reduce((prev, curr) => {
+        return prev + curr.quantity * curr.price;
+      }, 0);
+      return prev + tempTotal;
+    }, 0);
+  };
+
+  const printReport = async (input: Array<PurchaseType>) => {
+    const pixOperations = input.filter(
+      op => op.paymentMethod === PaymentMethodType.PIX,
+    );
+    const cardOperations = input.filter(
+      op => op.paymentMethod === PaymentMethodType.CREDIT,
+    );
+    const moneyOperations = input.filter(
+      op => op.paymentMethod === PaymentMethodType.MONEY,
+    );
+
+    const isValid = await validatePrinter();
+    if (!isValid) {
+      toastWarning('Impressora não conectada / Erro ao conectar');
+      return;
+    }
+    try {
+      setIsPrinting(true);
+      await printReportHeader(userData?.name, userData?.email);
+      await printAlign(ALIGN.LEFT);
+      await printLine(`Total de compras: ${input.length}`);
+      const total = handleGetTotal(input);
+      await printLine(`Valor total: ${formatCurrency(total)}`);
+      await printSpaces(2);
+
+      await printAlign(ALIGN.CENTER);
+      await printLine('PIX');
+      await printAlign(ALIGN.LEFT);
+      await printDivisor();
+      await printLine(`Total de compras: ${pixOperations.length}`);
+      await printLine(
+        `Valor total: ${formatCurrency(handleGetTotal(pixOperations))}`,
+      );
+      await printSpaces(2);
+
+      await printAlign(ALIGN.CENTER);
+      await printLine('DINHEIRO');
+      await printAlign(ALIGN.LEFT);
+      await printDivisor();
+      await printLine(`Total de compras: ${moneyOperations.length}`);
+      await printLine(
+        `Valor total: ${formatCurrency(handleGetTotal(moneyOperations))}`,
+      );
+      await printSpaces(2);
+
+      await printAlign(ALIGN.CENTER);
+      await printLine('CARTÃO');
+      await printAlign(ALIGN.LEFT);
+      await printDivisor();
+      await printLine(`Total de compras: ${cardOperations.length}`);
+      await printLine(
+        `Valor total: ${formatCurrency(handleGetTotal(cardOperations))}`,
+      );
+      await printSpaces(2);
+    } catch (err) {
+      toastError(String(err));
+    } finally {
+      setIsPrinting(false);
+    }
+  };
   const printPurchase = async (input: PrintPurchaseType) => {
     console.debug('[ble-print-purchase]');
     const isValid = await validatePrinter();
@@ -240,6 +313,7 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
         devices,
         disconnect,
         printPurchase,
+        printReport,
         scanDevices,
         scanning,
         isPrinting,

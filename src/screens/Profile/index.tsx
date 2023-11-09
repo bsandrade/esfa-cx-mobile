@@ -101,7 +101,7 @@ export const ProfileScreen = ({navigation}: ScreenProps): JSX.Element => {
         />
         <ProfileButton
           name="Relatorio"
-          onPress={() => navigation?.navigate(NavigationType.CONNECT)}
+          onPress={() => navigation?.navigate(NavigationType.DASHBOARD)}
         />
       </PurchaseArea>
     </Container>

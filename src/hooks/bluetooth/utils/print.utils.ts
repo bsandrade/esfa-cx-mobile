@@ -57,6 +57,23 @@ export const printQRCode = async (content: string) => {
   await BluetoothEscposPrinter.printPic(base64, {width: 200, left: 85});
 };
 
+export const printReportHeader = async (
+  user = 'no-user',
+  email = 'no-email',
+) => {
+  await printAlign(ALIGN.CENTER);
+  await printLine('Externato São Francisco de Assis');
+  await printDivisor();
+  await printAlign(ALIGN.LEFT);
+  await printLine('Relatório de operações');
+  await printLine(`Usuário: ${user}`);
+  await printLine(`Email: ${email}`);
+  const now = new Date();
+  await printLine(
+    `${now.toLocaleDateString('pt-br')} - ${now.toLocaleTimeString('pt-br')}`,
+  );
+  await printDivisor();
+};
 export const printHeader = async (input: PrintPurchaseType) => {
   await printAlign(ALIGN.CENTER);
   await printLine('Externato São Francisco de Assis');

@@ -35,6 +35,7 @@ import {TextInput} from 'react-native';
 import {useToastApp} from '@hooks/toast-app';
 import {useBluetooth} from '@hooks/bluetooth';
 import {useStorage} from '@hooks/storage';
+import {useSession} from '@src/hooks/session';
 
 export const CheckoutScreen = ({
   navigation,
@@ -53,6 +54,7 @@ export const CheckoutScreen = ({
   const {toastWarning, toastError, toastInfo} = useToastApp();
   const {printPurchase, validatePrinter} = useBluetooth();
   const {savePurchase} = useStorage();
+  const {userData} = useSession();
 
   const theme = useTheme();
   const iconSize = theme.icon.size.normal;
@@ -106,7 +108,7 @@ export const CheckoutScreen = ({
       const newPurchase = savePurchase({
         paymentMethod,
         products,
-        user: 'bruno',
+        user: userData?.email ?? 'no-user',
         paidValue,
       });
 

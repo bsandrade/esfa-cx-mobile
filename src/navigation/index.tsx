@@ -15,10 +15,10 @@ export const NavigationScreens = (): JSX.Element => {
   const {isAuthenticated} = useSession();
   return (
     <>
-      {!isAuthenticated ? (
+      {isAuthenticated ? (
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName={NavigationType.DASHBOARD}
+            initialRouteName={NavigationType.HOME}
             screenOptions={{
               headerShown: false,
             }}>

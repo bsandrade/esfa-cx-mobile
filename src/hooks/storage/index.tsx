@@ -23,6 +23,7 @@ type StorageContextType = {
   setProducts: (input: CreateProductType[]) => Array<ProductType>;
   getProducts: () => Array<ProductType>;
   clearData: () => void;
+  clearPurchases: () => void;
 };
 
 const StorageContext = createContext({} as StorageContextType);
@@ -131,6 +132,11 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
     deleteAllPurchases();
     deleteAllProducts();
   };
+
+  const clearPurchases = () => {
+    deleteAllPurchases();
+  };
+
   return (
     <StorageContext.Provider
       value={{
@@ -140,6 +146,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         setProducts,
         getProducts,
         clearData,
+        clearPurchases,
       }}>
       {children}
     </StorageContext.Provider>
