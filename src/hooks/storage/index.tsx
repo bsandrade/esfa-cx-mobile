@@ -3,6 +3,7 @@ import {useQuery, useRealm} from './realm';
 import {
   CreateProductType,
   CreatePurchaseType,
+  ProductSegmentType,
   ProductType,
   PurchaseType,
 } from '@src/types';
@@ -39,6 +40,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
     user,
     paidValue,
   }: CreatePurchaseType) => {
+    console.log('TYPES', productItems);
     const newPurchase = {
       paymentMethod,
       products: productItems,
@@ -62,7 +64,12 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
       response.push({
         id: purchase.id.toString(),
         paymentMethod: purchase.paymentMethod,
-        products: purchase.products,
+        products: purchase.products.map(product => ({
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+          type: product.type as ProductSegmentType,
+        })),
         user: purchase.user,
         paidValue: purchase.paidValue,
         createdAt: purchase.createdAt,
@@ -89,6 +96,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         const newProduct = {
           name: product.name,
           price: product.price,
+          type: product.type,
           id: new Realm.BSON.UUID(),
         };
         newProducts.push({
@@ -108,6 +116,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         id: product.id.toString(),
         name: product.name,
         price: product.price,
+        type: product.type,
       });
     });
     return response;

@@ -10,6 +10,7 @@ export class PurchaseSchema extends Realm.Object<PurchaseSchema> {
   user!: string;
   createdAt!: Date;
   paidValue?: number;
+
   static schema: ObjectSchema = {
     name: Schemas.PURCHASE,
     properties: {

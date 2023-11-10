@@ -6,10 +6,26 @@ export function generateProductLine(input: ProductItemType): string {
   const price = formatCurrency(input.quantity * input.price);
   const remainingLines = MAX_CHARS_PER_LINE - price.length - 6;
   let productName = input.name;
+  let needChange = false;
   if (productName.length > remainingLines) {
     productName = productName.substring(0, remainingLines - 1 - 3);
     productName = `${productName}...`;
+    needChange = true;
   }
+
+  const currentProductNameIndex = remainingLines - 1 - 3;
+  const restOfProductName: Array<string> = [];
+
+  if (needChange) {
+    for (
+      let i = currentProductNameIndex;
+      i < input.name.length;
+      i += remainingLines
+    ) {
+      restOfProductName.push(`${input.name.substring(i, i + remainingLines)}`);
+    }
+  }
+
   let quantity = String(input.quantity);
   if (input.quantity > 9999) {
     quantity = '9999';
@@ -26,6 +42,10 @@ export function generateProductLine(input: ProductItemType): string {
 
   const returnString = `${spacesQuantity.join('')}${
     input.quantity
-  } ${productName} ${spacesPrice.join('')}${price}`;
+  } ${productName} ${spacesPrice.join('')}${price}${
+    restOfProductName.length > 0
+      ? `\n     ${restOfProductName.join('\n     ')}`
+      : ''
+  }`;
   return returnString;
 }

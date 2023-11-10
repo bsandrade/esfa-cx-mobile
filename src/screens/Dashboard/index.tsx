@@ -24,7 +24,7 @@ import {
   ScreenProps,
 } from '@src/types';
 import {useStorage} from '@src/hooks/storage';
-import {useSession} from '@src/hooks/session';
+// import {useSession} from '@src/hooks/session';
 import {useToastApp} from '@src/hooks/toast-app';
 import {DatePicker} from '@components/Base/DatePicker';
 import {DateTime} from 'luxon';
@@ -74,7 +74,7 @@ export const DashboardScreen = ({
   const [lastPurchasesCount, setLastPurchaseCount] = useState(10);
 
   const {getPurchases, clearPurchases} = useStorage();
-  const {userData} = useSession();
+  // const {userData} = useSession();
   const {toastSuccess, toastWarning, toastInfo} = useToastApp();
   const {printReport} = useBluetooth();
   const theme = useTheme();
@@ -163,9 +163,7 @@ export const DashboardScreen = ({
   };
 
   useEffect(() => {
-    const newPurchases = getPurchases().filter(
-      purchase => purchase.user === userData?.email,
-    );
+    const newPurchases = getPurchases();
     setPurchases(newPurchases);
     setFilteredPurchases(newPurchases);
     // eslint-disable-next-line

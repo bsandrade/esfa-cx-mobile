@@ -5,6 +5,7 @@ export class ProductItemSchema extends Realm.Object<ProductItemSchema> {
   name!: string;
   price!: number;
   quantity!: number;
+  type!: string;
 
   static schema: ObjectSchema = {
     name: Schemas.PRODUCT_ITEM,
@@ -13,6 +14,7 @@ export class ProductItemSchema extends Realm.Object<ProductItemSchema> {
       name: 'string',
       price: 'float',
       quantity: 'int',
+      type: 'string',
     },
   };
 }

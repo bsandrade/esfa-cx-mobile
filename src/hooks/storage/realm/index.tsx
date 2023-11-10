@@ -6,7 +6,7 @@ import {ProductItemSchema} from '../schemas/product-item.schema';
 
 const realmConfig: Realm.Configuration = {
   schema: [ProductSchema, ProductItemSchema, PurchaseSchema],
-  schemaVersion: 4,
+  schemaVersion: 8,
 };
 
 const {RealmProvider, useRealm, useObject, useQuery} =
