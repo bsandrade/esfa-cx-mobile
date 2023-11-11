@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {BluetoothManager} from '@brooons/react-native-bluetooth-escpos-printer';
-import {PaymentMethodType, PurchaseType} from '@src/types';
+import {PaymentMethodType, ProductItemType, PurchaseType} from '@src/types';
 import {
   ALIGN,
   printAlign,
@@ -24,6 +24,7 @@ import {formatCurrency, translatedPaymentMethod} from '@src/utils';
 import {useToastApp} from '../toast-app';
 import {useSession} from '../session';
 import {useStorage} from '../storage';
+import {generateReportLine} from './utils/generate-report-line.utils';
 
 type CheckDevices = {
   name: string;
@@ -313,34 +314,47 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       await printSpaces(2);
 
       await printAlign(ALIGN.CENTER);
-      await printLine('PIX');
+      await printLine('Relatório por tipo de operação');
+      await printSpaces();
       await printAlign(ALIGN.LEFT);
+      await printLine('Pgto.     Compras          Total');
       await printDivisor();
-      await printLine(`Total de compras: ${pixOperations.length}`);
-      await printLine(
-        `Valor total: ${formatCurrency(handleGetTotal(pixOperations))}`,
-      );
-      await printSpaces(2);
+      await printLine(generateReportLine(pixOperations, 'PIX'));
+      await printLine(generateReportLine(cardOperations, 'CARTÃO'));
+      await printLine(generateReportLine(moneyOperations, 'DINHEIRO'));
+      await printSpaces(3);
 
       await printAlign(ALIGN.CENTER);
-      await printLine('DINHEIRO');
+      await printLine('Relatório por produto');
+      await printSpaces();
       await printAlign(ALIGN.LEFT);
+      await printLine('Qtd. Desc.                Valor');
       await printDivisor();
-      await printLine(`Total de compras: ${moneyOperations.length}`);
-      await printLine(
-        `Valor total: ${formatCurrency(handleGetTotal(moneyOperations))}`,
-      );
-      await printSpaces(2);
 
-      await printAlign(ALIGN.CENTER);
-      await printLine('CARTÃO');
-      await printAlign(ALIGN.LEFT);
-      await printDivisor();
-      await printLine(`Total de compras: ${cardOperations.length}`);
-      await printLine(
-        `Valor total: ${formatCurrency(handleGetTotal(cardOperations))}`,
-      );
-      await printSpaces(2);
+      const allReportProducts: Array<ProductItemType> = [];
+
+      input.map(purchase => {
+        purchase.products.map(product => {
+          const productIndex = allReportProducts.findIndex(
+            prod => prod.name === product.name,
+          );
+          if (productIndex >= 0) {
+            allReportProducts[productIndex].quantity += product.quantity;
+          } else {
+            allReportProducts.push({
+              name: product.name,
+              price: product.price,
+              quantity: product.quantity,
+              type: product.type,
+            });
+          }
+        });
+      });
+
+      for (const prod of allReportProducts) {
+        await printLine(generateProductLine(prod));
+      }
+      await printSpaces(4);
     } catch (err) {
       toastError(String(err));
     } finally {
