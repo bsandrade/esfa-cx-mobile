@@ -173,7 +173,7 @@ export const DashboardScreen = ({
     console.log('handle update');
     handleUpdateFilteredPurchases();
     // eslint-disable-next-line
-  }, [selectedLabel, startDate, endDate, lastHoursCount, lastPurchasesCount]);
+  }, [purchases, selectedLabel, startDate, endDate, lastHoursCount, lastPurchasesCount]);
 
   const handleClearPurchases = () => {
     Alert.alert(

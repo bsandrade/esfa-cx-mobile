@@ -23,6 +23,12 @@ import {generateProductLine} from './utils/generate-product-line.utils';
 import {formatCurrency, translatedPaymentMethod} from '@src/utils';
 import {useToastApp} from '../toast-app';
 import {useSession} from '../session';
+import {useStorage} from '../storage';
+
+type CheckDevices = {
+  name: string;
+  address: string;
+};
 
 type ScanDeviceOutput = {
   found: Array<Device>;
@@ -64,7 +70,9 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const [isPrinting, setIsPrinting] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const {toastWarning, toastError} = useToastApp();
+
   const {userData} = useSession();
+  const {setDevice, getDevices} = useStorage();
 
   async function bootstrap() {
     const isEnabled = await BluetoothManager.checkBluetoothEnabled();
@@ -150,6 +158,9 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       tempDevices[deviceIndex].connecting = false;
       tempDevices[deviceIndex].connected = true;
       setConnectedDevice(tempDevices[deviceIndex]);
+      setDevice({
+        address: tempDevices[deviceIndex].address,
+      });
     } catch (err) {
       toastWarning(String(err));
     } finally {
@@ -178,10 +189,91 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
     setDevices(tempDevices);
   };
 
+  const connectAttempt = async (address: string): Promise<string> => {
+    try {
+      await BluetoothManager.connect(address);
+      return 'true';
+    } catch (err) {}
+    try {
+      await BluetoothManager.connect(address);
+      return 'true';
+    } catch (err) {
+      return 'error';
+    }
+  };
+
+  const connectAndTest = async (input: CheckDevices) => {
+    const checkConnect = await connectAttempt(input.address);
+    if (checkConnect === 'error') {
+      return false;
+    }
+    const isValidCheck = await printerIsValid();
+    if (isValidCheck) {
+      setDevice({address: input.address});
+      setConnectedDevice({
+        address: input.address,
+        name: input.name,
+        connected: true,
+        connecting: false,
+        paired: true,
+      });
+      return true;
+    }
+    return false;
+  };
+
   const validatePrinter = async () => {
+    console.debug('[ble-validate-printer]');
     const isValid = await printerIsValid();
     if (!isValid || !connectedDevice) {
+      console.debug('[ble-validate-not-valid]');
+      const storageDevices = getDevices();
+      console.debug('storaged', storageDevices);
+
+      const response = await BluetoothManager.enableBluetooth();
+      if (!response) {
+        return false;
+      }
+      const newDevices: Array<CheckDevices> = response.map(dev => {
+        return JSON.parse(dev);
+      });
+
+      const lastDeviceConnected = storageDevices.find(
+        dev => dev.lastConnected === true,
+      );
+
+      console.debug('[ble-has-last-connected-device]');
+
+      if (
+        lastDeviceConnected &&
+        newDevices.find(dev => dev.address === lastDeviceConnected.address)
+      ) {
+        const device = newDevices.find(
+          dev => dev.address === lastDeviceConnected.address,
+        ) as CheckDevices;
+        if (await connectAndTest(device)) {
+          console.debug('[ble-connected-with-attempt]');
+          return true;
+        }
+      }
+
+      const commonDevices = newDevices.filter(
+        newDev =>
+          storageDevices.findIndex(dev => dev.address === newDev.address) >= 0,
+      );
+      for (const device of commonDevices) {
+        if (await connectAndTest(device)) {
+          return true;
+        }
+      }
+
       return false;
+    }
+
+    if (connectedDevice) {
+      setDevice({
+        address: connectedDevice.address,
+      });
     }
     return true;
   };

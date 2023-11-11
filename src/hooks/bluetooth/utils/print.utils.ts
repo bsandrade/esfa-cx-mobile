@@ -96,5 +96,7 @@ export const printHeader = async (input: PrintPurchaseType) => {
   // 32
   await printLine('Ordem de Compra', 2);
   await printAlign(ALIGN.LEFT);
+  await printDivisor();
   await printLine('Qtd. Desc.                Valor');
+  await printDivisor();
 };

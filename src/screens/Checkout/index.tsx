@@ -61,10 +61,12 @@ export const CheckoutScreen = ({
   const iconColor = theme.colors.text.primary;
 
   useEffect(() => {
+    console.log('[checkout-back]');
     if (!route?.params || route.params.products?.length === 0) {
       navigation?.navigate(NavigationType.HOME);
     }
     if (route?.params.goBack === NavigationType.CONNECT) {
+      console.log('[checkout-was-connect-previous-page]');
       validatePrinter()
         .then(() => setPrinterIsValid(true))
         .catch(() => setPrinterIsValid(false));
@@ -108,7 +110,7 @@ export const CheckoutScreen = ({
       const newPurchase = savePurchase({
         paymentMethod,
         products,
-        user: userData?.email ?? 'no-user',
+        user: userData?.name ?? 'no-user',
         paidValue,
       });
 

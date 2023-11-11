@@ -1,8 +1,10 @@
 import Realm from 'realm';
 import {useQuery, useRealm} from './realm';
 import {
+  CreateDeviceType,
   CreateProductType,
   CreatePurchaseType,
+  DeviceType,
   ProductSegmentType,
   ProductType,
   PurchaseType,
@@ -12,6 +14,7 @@ import React, {ReactNode, createContext, useContext} from 'react';
 import {Schemas} from './realm/constants';
 import {PurchaseSchema} from './schemas/purchase.schema';
 import {ProductSchema} from './schemas/product.schema';
+import {ConnectedDevicesSchema} from './schemas/connected-devices.schema';
 
 type StorageProviderType = {
   children: ReactNode;
@@ -25,6 +28,8 @@ type StorageContextType = {
   getProducts: () => Array<ProductType>;
   clearData: () => void;
   clearPurchases: () => void;
+  setDevice: (input: CreateDeviceType) => void;
+  getDevices: () => Array<DeviceType>;
 };
 
 const StorageContext = createContext({} as StorageContextType);
@@ -33,6 +38,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
   const realm = useRealm();
   const purchases = useQuery(PurchaseSchema);
   const products = useQuery(ProductSchema);
+  const devices = useQuery(ConnectedDevicesSchema);
 
   const savePurchase = ({
     paymentMethod,
@@ -40,7 +46,6 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
     user,
     paidValue,
   }: CreatePurchaseType) => {
-    console.log('TYPES', productItems);
     const newPurchase = {
       paymentMethod,
       products: productItems,
@@ -56,6 +61,18 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
       ...newPurchase,
       id: newPurchase.id.toString(),
     };
+  };
+
+  const getDevices = () => {
+    const response: Array<DeviceType> = [];
+    devices.forEach(purchase => {
+      response.push({
+        id: purchase.id.toString(),
+        address: purchase.address,
+        lastConnected: purchase.lastConnected,
+      });
+    });
+    return response;
   };
 
   const getPurchases = () => {
@@ -84,6 +101,47 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
     );
     realm.write(() => {
       realm.delete(purchaseToDelete);
+    });
+  };
+
+  const deleteDevices = () => {
+    console.debug('[storage-deleting-devices]');
+    realm.write(() => {
+      devices.map(dev => {
+        return realm.delete(dev);
+      });
+    });
+  };
+
+  const setDevice = ({address}: CreateDeviceType) => {
+    console.debug('[storage-device-starting]');
+    const newDevices = [
+      ...devices.map(dev => {
+        return {
+          address: dev.address,
+          lastConnected: false,
+        };
+      }),
+    ];
+    const index = newDevices.findIndex(dev => dev.address === address);
+    deleteDevices();
+    if (index >= 0) {
+      console.debug('[storage-set-last-connected]');
+      newDevices[index].lastConnected = true;
+    } else {
+      newDevices.push({
+        address,
+        lastConnected: true,
+      });
+    }
+    realm.write(() => {
+      newDevices.map(dev => {
+        const newDevice = {
+          ...dev,
+          id: new Realm.BSON.UUID(),
+        };
+        return realm.create(Schemas.DEVICE, newDevice);
+      });
     });
   };
 
@@ -149,11 +207,13 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
   return (
     <StorageContext.Provider
       value={{
-        savePurchase,
         getPurchases,
-        deletePurchase,
-        setProducts,
         getProducts,
+        getDevices,
+        savePurchase,
+        setDevice,
+        setProducts,
+        deletePurchase,
         clearData,
         clearPurchases,
       }}>
