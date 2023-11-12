@@ -280,39 +280,46 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   };
 
   const handleGetTotal = (input: Array<PurchaseType>) => {
-    return input.reduce((prev, curr) => {
-      const tempTotal = curr.products.reduce((prev, curr) => {
-        return prev + curr.quantity * curr.price;
+    const response = {
+      totalPrice: 0,
+      totalDiscountPrice: 0,
+    };
+    input.map(purchase => {
+      let oldPriceSum = 0;
+      const tempTotal = purchase.products.reduce((prev, curr) => {
+        const totalTemp = curr.quantity * curr.price;
+        if (curr.oldPrice) {
+          oldPriceSum += curr.quantity * curr.oldPrice;
+          response.totalDiscountPrice += oldPriceSum - totalTemp;
+          return prev + oldPriceSum;
+        } else {
+          return prev + totalTemp;
+        }
       }, 0);
-      return prev + tempTotal;
+      response.totalPrice += tempTotal;
     }, 0);
+    return response;
   };
 
   const printReport = async (input: Array<PurchaseType>) => {
-    const pixOperations = input.filter(
-      op => op.paymentMethod === PaymentMethodType.PIX,
-    );
-    const cardOperations = input.filter(
-      op => op.paymentMethod === PaymentMethodType.CREDIT,
-    );
-    const moneyOperations = input.filter(
-      op => op.paymentMethod === PaymentMethodType.MONEY,
-    );
-
-    const isValid = await validatePrinter();
-    if (!isValid) {
-      toastWarning('Impressora não conectada / Erro ao conectar');
-      return;
-    }
+    setIsPrinting(true);
     try {
-      setIsPrinting(true);
-      await printReportHeader(userData?.name, userData?.email);
-      await printAlign(ALIGN.LEFT);
-      await printLine(`Total de compras: ${input.length}`);
-      const total = handleGetTotal(input);
-      await printLine(`Valor total: ${formatCurrency(total)}`);
-      await printSpaces(2);
+      const pixOperations = input.filter(
+        op => op.paymentMethod === PaymentMethodType.PIX,
+      );
+      const cardOperations = input.filter(
+        op => op.paymentMethod === PaymentMethodType.CREDIT,
+      );
+      const moneyOperations = input.filter(
+        op => op.paymentMethod === PaymentMethodType.MONEY,
+      );
 
+      const isValid = await validatePrinter();
+      if (!isValid) {
+        toastWarning('Impressora não conectada / Erro ao conectar');
+        return;
+      }
+      await printReportHeader(userData?.name, userData?.email);
       await printAlign(ALIGN.CENTER);
       await printLine('Relatório por tipo de operação');
       await printSpaces();
@@ -354,9 +361,18 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       for (const prod of allReportProducts) {
         await printLine(generateProductLine(prod));
       }
+      await printDivisor();
+      await printLine(`Total de compras: ${input.length}`);
+      const {totalDiscountPrice, totalPrice} = handleGetTotal(input);
+      await printLine(`Valor total: ${formatCurrency(totalPrice)}`);
+      await printLine(`Descontos: ${formatCurrency(totalDiscountPrice)}`);
+      await printLine(
+        `Soma: ${formatCurrency(totalPrice - totalDiscountPrice)}`,
+      );
       await printSpaces(4);
     } catch (err) {
-      toastError(String(err));
+      console.debug(String(err));
+      toastError('Ocorreu um erro ao tentar imprimir');
     } finally {
       setIsPrinting(false);
     }

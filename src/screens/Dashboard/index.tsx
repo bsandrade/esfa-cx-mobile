@@ -4,6 +4,7 @@ import {
   Container,
   Content,
   DashButton,
+  DashIsPrinting,
   DateText,
   FilterArea,
   FilterButton,
@@ -76,7 +77,7 @@ export const DashboardScreen = ({
   const {getPurchases, clearPurchases} = useStorage();
   // const {userData} = useSession();
   const {toastSuccess, toastWarning, toastInfo} = useToastApp();
-  const {printReport} = useBluetooth();
+  const {printReport, isPrinting} = useBluetooth();
   const theme = useTheme();
 
   const handleSetStartDate = (input: DateTime) => {
@@ -317,8 +318,17 @@ export const DashboardScreen = ({
             </ReportArea>
             <ButtonsArea>
               <DashButton
-                name="Imprimir"
-                onPress={() => printReport(filteredPurchases)}
+                name={isPrinting ? 'Imprimindo' : 'Imprimir'}
+                Animation={isPrinting ? <DashIsPrinting /> : undefined}
+                onPress={() => {
+                  if (isPrinting) {
+                    toastWarning(
+                      'No momento uma tentativa de impressão está acontecendo',
+                    );
+                  } else {
+                    printReport(filteredPurchases);
+                  }
+                }}
               />
               <DashButton name="Limpar Dados" onPress={handleClearPurchases} />
             </ButtonsArea>

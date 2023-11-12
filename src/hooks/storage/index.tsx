@@ -2,7 +2,6 @@ import Realm from 'realm';
 import {useQuery, useRealm} from './realm';
 import {
   CreateDeviceType,
-  CreateProductType,
   CreatePurchaseType,
   DeviceType,
   ProductSegmentType,
@@ -24,10 +23,11 @@ type StorageContextType = {
   getPurchases: () => Array<PurchaseType>;
   savePurchase: (input: CreatePurchaseType) => PurchaseType;
   deletePurchase: (id: string) => void;
-  setProducts: (input: CreateProductType[]) => Array<ProductType>;
+  setProducts: (input: ProductType[]) => Array<ProductType>;
   getProducts: () => Array<ProductType>;
   clearData: () => void;
   clearPurchases: () => void;
+  clearProducts: () => void;
   setDevice: (input: CreateDeviceType) => void;
   getDevices: () => Array<DeviceType>;
 };
@@ -84,6 +84,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         products: purchase.products.map(product => ({
           name: product.name,
           price: product.price,
+          oldPrice: product.oldPrice,
           quantity: product.quantity,
           type: product.type as ProductSegmentType,
         })),
@@ -145,26 +146,20 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
     });
   };
 
-  const setProducts = (input: CreateProductType[]) => {
+  const setProducts = (input: ProductType[]) => {
     deleteAllProducts();
-    const newProducts: Array<ProductType> = [];
-
     realm.write(() => {
       input.map(product => {
-        const newProduct = {
+        return realm.create(Schemas.PRODUCT, {
+          id: product.id,
           name: product.name,
           price: product.price,
+          oldPrice: product.oldPrice,
           type: product.type,
-          id: new Realm.BSON.UUID(),
-        };
-        newProducts.push({
-          ...newProduct,
-          id: newProduct.id.toString(),
         });
-        return realm.create(Schemas.PRODUCT, newProduct);
       });
     });
-    return newProducts;
+    return input;
   };
 
   const getProducts = () => {
@@ -175,6 +170,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         name: product.name,
         price: product.price,
         type: product.type,
+        oldPrice: product.oldPrice,
       });
     });
     return response;
@@ -216,6 +212,7 @@ const StorageProvider = ({children}: StorageProviderType): JSX.Element => {
         deletePurchase,
         clearData,
         clearPurchases,
+        clearProducts: deleteAllProducts,
       }}>
       {children}
     </StorageContext.Provider>

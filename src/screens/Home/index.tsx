@@ -8,55 +8,65 @@ import {
 import {TopBar} from '@components/TopBar';
 import {Product} from '@components/Product';
 import {
-  CreateProductType,
   NavigationType,
   ProductItemType,
+  ProductType,
   ScreenProps,
 } from '@src/types';
 import {DetailsModal} from '@components/Modals/DetailsModal';
 import {useToastApp} from '@hooks/toast-app';
 import {useStorage} from '@hooks/storage';
+import {v4} from 'uuid';
 
-const productsApi: Array<CreateProductType> = [
+const productsApi: Array<ProductType> = [
   {
     name: 'Coxinha',
-    price: 4.75,
+    price: 2.5,
+    oldPrice: 4.75,
     type: 'food',
+    id: v4(),
   },
   {
     name: 'Refrigerante',
     price: 5.0,
     type: 'drink',
+    id: v4(),
   },
   {
     name: 'Suco',
     price: 2.5,
     type: 'drink',
+    id: v4(),
   },
   {
     name: 'Pastel de Frango',
     price: 4.75,
     type: 'food',
+    id: v4(),
   },
   {
     name: 'Amendoim Torrado',
     price: 1.2,
     type: 'food',
+    id: v4(),
   },
   {
     name: 'Coca Cola Limão',
-    price: 1.2,
+    price: 5,
     type: 'drink',
+    id: v4(),
   },
   {
     name: 'Pastel de Forno sabor Carne',
     price: 1.2,
     type: 'food',
+    id: v4(),
   },
   {
     name: 'Pastel de Forno sabor Frango',
     price: 1.2,
     type: 'food',
+    id: v4(),
   },
 ];
 
@@ -80,7 +90,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
   const handleSetProducts = (index: number, number: number) => {
     const tempProducts = [...productItems];
     tempProducts[index].quantity = number;
-    setProducts(tempProducts);
+    setProductItems(tempProducts);
   };
 
   const handleShowDetailsModal = () => {
@@ -109,6 +119,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
               key={it.index}
               name={it.item.name}
               price={it.item.price}
+              oldPrice={it.item.oldPrice}
               quantity={it.item.quantity}
               type={it.item.type}
               setQuantity={value => {

@@ -8,7 +8,9 @@ import {
   ProductIconEntypo,
   ProductInfoArea,
   ProductInfoName,
+  ProductInfoOldValue,
   ProductInfoValue,
+  ProductInfoValueArea,
   ProductQuantityArea,
   ProductQuantityIcon,
   ProductQuantityIconButton,
@@ -25,12 +27,14 @@ type ProductProps = {
   quantity: number;
   type: ProductSegmentType;
   price: number;
+  oldPrice?: number;
   setQuantity: (input: number) => void;
 };
 
 export const Product = ({
   name,
   price,
+  oldPrice,
   quantity,
   type,
   setQuantity,
@@ -79,7 +83,14 @@ export const Product = ({
           ) : (
             <ProductInfoName>{name.toUpperCase()}</ProductInfoName>
           )}
-          <ProductInfoValue>{formatCurrency(price)}</ProductInfoValue>
+          <ProductInfoValueArea>
+            {oldPrice && (
+              <ProductInfoOldValue>
+                {formatCurrency(oldPrice)}
+              </ProductInfoOldValue>
+            )}
+            <ProductInfoValue>{formatCurrency(price)}</ProductInfoValue>
+          </ProductInfoValueArea>
         </ProductInfoArea>
       </ProductHeaderArea>
 

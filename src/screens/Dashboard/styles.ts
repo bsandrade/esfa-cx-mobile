@@ -46,6 +46,8 @@ export const HourFilterArea = styled.View`
   justify-content: space-evenly;
 `;
 
+export const DashIsPrinting = styled.ActivityIndicator``;
+
 export const HourText = styled(TextApp)``;
 
 export const HourInput = styled.TextInput`

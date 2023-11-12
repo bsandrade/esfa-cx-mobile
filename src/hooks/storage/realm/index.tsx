@@ -12,7 +12,7 @@ const realmConfig: Realm.Configuration = {
     PurchaseSchema,
     ConnectedDevicesSchema,
   ],
-  schemaVersion: 9,
+  schemaVersion: 11,
 };
 
 const {RealmProvider, useRealm, useObject, useQuery} =

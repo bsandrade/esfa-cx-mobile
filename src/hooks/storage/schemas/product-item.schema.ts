@@ -4,6 +4,7 @@ import {Schemas} from '../realm/constants';
 export class ProductItemSchema extends Realm.Object<ProductItemSchema> {
   name!: string;
   price!: number;
+  oldPrice?: number;
   quantity!: number;
   type!: string;
 
@@ -13,6 +14,7 @@ export class ProductItemSchema extends Realm.Object<ProductItemSchema> {
     properties: {
       name: 'string',
       price: 'float',
+      oldPrice: 'float?',
       quantity: 'int',
       type: 'string',
     },

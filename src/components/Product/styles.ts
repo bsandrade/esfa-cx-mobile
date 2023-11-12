@@ -44,6 +44,15 @@ export const ProductInfoName = styled(TextApp)`
 `;
 
 export const ProductInfoValue = styled(TextApp)``;
+export const ProductInfoOldValue = styled(TextApp)`
+  margin-right: ${resPX(13)};
+  text-decoration-line: line-through;
+  color: ${({theme}) => theme.colors.text.attention};
+`;
+
+export const ProductInfoValueArea = styled.View`
+  flex-direction: row;
+`;
 
 export const ProductQuantityArea = styled.View`
   flex-direction: row;

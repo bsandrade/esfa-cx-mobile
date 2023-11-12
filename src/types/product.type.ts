@@ -1,11 +1,9 @@
 export type ProductSegmentType = 'drink' | 'food' | 'both';
 
-export type CreateProductType = {
+export type ProductType = {
   name: string;
   price: number;
+  oldPrice?: number;
   type: ProductSegmentType;
-};
-
-export type ProductType = CreateProductType & {
   id: string;
 };
