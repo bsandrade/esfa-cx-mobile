@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Container,
   HomeCheckoutButton,
@@ -76,6 +76,16 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
 
   const {setProducts, getProducts} = useStorage();
   const {toastInfo} = useToastApp();
+
+  useEffect(() => {
+    setProductItems(
+      getProducts().map(product => ({
+        ...product,
+        quantity: 0,
+      })),
+    );
+    // eslint-disable-next-line
+  }, []);
 
   const handleUpdateProducts = async () => {
     setProducts(productsApi);
