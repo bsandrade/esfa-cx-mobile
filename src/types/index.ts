@@ -7,3 +7,5 @@ export * from './purchase/purchase.type';
 export * from './app/animations.type';
 export * from './app/user.type';
 export * from './app/device.type';
+export * from './api/auth.type';
+export * from './api/list-products.type';

@@ -16,6 +16,7 @@ import {
 } from './styles';
 import {useTheme} from 'styled-components/native';
 import {useSession} from '@src/hooks/session';
+import {StatusBar} from 'react-native';
 
 export const LoginScreen = (): JSX.Element => {
   const theme = useTheme();
@@ -23,8 +24,11 @@ export const LoginScreen = (): JSX.Element => {
   const iconSize = theme.icon.size.tiny;
   const iconColor = theme.colors.background;
 
+  const statusBarColor = theme.colors.background;
+
   return (
     <Container>
+      <StatusBar backgroundColor={statusBarColor} />
       <Content>
         <LogoArea>
           <Logo

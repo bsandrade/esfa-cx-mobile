@@ -1,6 +1,7 @@
 export const DefaultCustomTheme = {
   colors: {
     background: '#EDF1F9',
+    backgroundTransparent: 'rgba(66, 66, 106, 0.4)',
     primary: {
       main: '#6A097D',
       contrastText: '#F1D4D4',

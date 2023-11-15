@@ -13,6 +13,8 @@ import React, {
 } from 'react';
 import {useToastApp} from '../toast-app';
 import {useSecrets} from '../secrets';
+import {useApi} from '../api';
+import {AuthException} from '@src/shared/exceptions/api-exceptions';
 
 type SessionType = {
   isAuthenticated: boolean;
@@ -33,8 +35,9 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
   const [inProgressSignIn, setInProgressSignIn] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const {toastError, toastSuccess} = useToastApp();
+  const {toastError, toastSuccess, toastWarning} = useToastApp();
   const {google} = useSecrets();
+  const {auth, token} = useApi();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -49,11 +52,25 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
     // });
   });
 
+  useEffect(() => {
+    if (!token && isAuthenticated) {
+      toastWarning('Sessão expirada');
+      signOut();
+      setUserData(undefined);
+      setIsAuthenticated(false);
+    }
+    //eslint-disable-next-line
+  }, [token])
+
   const signIn = async () => {
     setInProgressSignIn(true);
     try {
       await GoogleSignin.hasPlayServices();
       const {user} = await GoogleSignin.signIn();
+      await auth({
+        id: user.id,
+      });
+
       // const credential = GoogleAuthProvider.credential(
       //   idToken,
       //   serverAuthCode,
@@ -72,6 +89,14 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
       toastSuccess('Login feito com sucesso');
     } catch (error: any) {
       setIsAuthenticated(false);
+
+      if (error instanceof AuthException) {
+        toastWarning(
+          'Você não tem permissão para acessar o sistema. Entre em contato com o administrador',
+        );
+        return;
+      }
+
       if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
         toastError('Login cancelado pelo usuário');
         return;
@@ -100,7 +125,7 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
     } finally {
       setUserData(null as any);
       setIsAuthenticated(false);
-      toastSuccess('Login feito com sucesso');
+      toastSuccess('Logout feito com sucesso');
     }
   };
 

@@ -8,6 +8,7 @@ import {RealmProvider} from './storage/realm';
 import {StorageProvider} from './storage';
 import {SessionProvider} from './session';
 import {SecretsProvider} from './secrets';
+import {ApiProvider} from './api';
 type HooksProps = {
   children: ReactNode;
 };
@@ -19,13 +20,15 @@ export const Hooks = ({children}: HooksProps): JSX.Element => {
         <SecretsProvider>
           <ToastProvider>
             <ToastAppProvider>
-              <SessionProvider>
-                <RealmProvider>
-                  <StorageProvider>
-                    <BluetoothProvider>{children}</BluetoothProvider>
-                  </StorageProvider>
-                </RealmProvider>
-              </SessionProvider>
+              <ApiProvider>
+                <SessionProvider>
+                  <RealmProvider>
+                    <StorageProvider>
+                      <BluetoothProvider>{children}</BluetoothProvider>
+                    </StorageProvider>
+                  </RealmProvider>
+                </SessionProvider>
+              </ApiProvider>
             </ToastAppProvider>
           </ToastProvider>
         </SecretsProvider>

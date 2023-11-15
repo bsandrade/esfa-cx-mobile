@@ -2,99 +2,66 @@ import React, {useEffect, useState} from 'react';
 import {
   Container,
   HomeCheckoutButton,
+  ProductInfoArea,
+  ProductInfoText,
   ProductList,
   ProductSeparator,
 } from './styles';
 import {TopBar} from '@components/TopBar';
 import {Product} from '@components/Product';
-import {
-  NavigationType,
-  ProductItemType,
-  ProductType,
-  ScreenProps,
-} from '@src/types';
+import {NavigationType, ProductItemType, ScreenProps} from '@src/types';
 import {DetailsModal} from '@components/Modals/DetailsModal';
 import {useToastApp} from '@hooks/toast-app';
 import {useStorage} from '@hooks/storage';
-import {v4} from 'uuid';
-
-const productsApi: Array<ProductType> = [
-  {
-    name: 'Coxinha',
-    price: 2.5,
-    oldPrice: 4.75,
-    type: 'food',
-    id: v4(),
-  },
-  {
-    name: 'Refrigerante',
-    price: 5.0,
-    type: 'drink',
-    id: v4(),
-  },
-  {
-    name: 'Suco',
-    price: 2.5,
-    type: 'drink',
-    id: v4(),
-  },
-  {
-    name: 'Pastel de Frango',
-    price: 4.75,
-    type: 'food',
-    id: v4(),
-  },
-  {
-    name: 'Amendoim Torrado',
-    price: 1.2,
-    type: 'food',
-    id: v4(),
-  },
-  {
-    name: 'Coca Cola Limão',
-    price: 5,
-    type: 'drink',
-    id: v4(),
-  },
-  {
-    name: 'Pastel de Forno sabor Carne',
-    price: 1.2,
-    type: 'food',
-    id: v4(),
-  },
-  {
-    name: 'Pastel de Forno sabor Frango',
-    price: 1.2,
-    type: 'food',
-    id: v4(),
-  },
-];
+import {useApi} from '@src/hooks/api';
+import {LoadingModal} from '@components/Modals/LoadingModal';
 
 export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
   const [showDetails, setShowDetails] = useState(false);
   const [productItems, setProductItems] = useState<ProductItemType[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
 
   const {setProducts, getProducts} = useStorage();
-  const {toastInfo} = useToastApp();
+  const {listProducts} = useApi();
+  const {toastInfo, toastError} = useToastApp();
 
   useEffect(() => {
-    setProductItems(
-      getProducts().map(product => ({
-        ...product,
-        quantity: 0,
-      })),
-    );
+    const newProducts = getProducts();
+    if (newProducts.length === 0) {
+      toastInfo('Nenhum produto cadastrado no app');
+    } else {
+      setProductItems(
+        newProducts.map(prod => ({
+          ...prod,
+          quantity: 0,
+        })),
+      );
+    }
     // eslint-disable-next-line
   }, []);
 
   const handleUpdateProducts = async () => {
-    setProducts(productsApi);
-    setProductItems(
-      getProducts().map(product => ({
-        ...product,
-        quantity: 0,
-      })),
-    );
+    setIsFetching(true);
+    try {
+      const {products: fetchProducts} = await listProducts();
+      if (fetchProducts.length === 0) {
+        toastInfo('Não há produtos cadastrados no sistema');
+      } else {
+        toastInfo('Produtos carregados com sucesso');
+        setProducts(fetchProducts);
+        setProductItems(
+          fetchProducts.map(product => ({
+            ...product,
+            quantity: 0,
+          })),
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toastError('Erro ao buscar produtos, por favor, tente novamente');
+    } finally {
+      setIsFetching(false);
+    }
   };
 
   const handleSetProducts = (index: number, number: number) => {
@@ -113,6 +80,7 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
 
   return (
     <Container>
+      {isFetching && <LoadingModal isLoading={isFetching} />}
       <TopBar
         name="Ordem"
         leftIconName="autorenew"
@@ -120,26 +88,42 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
         onClickLeftIcon={handleUpdateProducts}
         onClickRightIcon={() => navigation?.navigate(NavigationType.PROFILE)}
       />
-      <ProductList
-        data={productItems}
-        ItemSeparatorComponent={ProductSeparator}
-        renderItem={it => {
-          return (
-            <Product
-              key={it.index}
-              name={it.item.name}
-              price={it.item.price}
-              oldPrice={it.item.oldPrice}
-              quantity={it.item.quantity}
-              type={it.item.type}
-              setQuantity={value => {
-                handleSetProducts(it.index, value);
-              }}
-            />
-          );
-        }}
-      />
-      <HomeCheckoutButton name="Detalhes" onPress={handleShowDetailsModal} />
+      {productItems.length === 0 ? (
+        <>
+          <ProductInfoArea>
+            <ProductInfoText>
+              Não há produtos registrados no app... clique no botão superior
+              esquerdo para buscar os produtos no sistema
+            </ProductInfoText>
+          </ProductInfoArea>
+        </>
+      ) : (
+        <>
+          <ProductList
+            data={productItems}
+            ItemSeparatorComponent={ProductSeparator}
+            renderItem={it => {
+              return (
+                <Product
+                  key={it.index}
+                  name={it.item.name}
+                  price={it.item.price}
+                  oldPrice={it.item.oldPrice}
+                  quantity={it.item.quantity}
+                  type={it.item.type}
+                  setQuantity={value => {
+                    handleSetProducts(it.index, value);
+                  }}
+                />
+              );
+            }}
+          />
+          <HomeCheckoutButton
+            name="Detalhes"
+            onPress={handleShowDetailsModal}
+          />
+        </>
+      )}
       <DetailsModal
         products={productItems.filter(p => p.quantity > 0)}
         closeModal={() => setShowDetails(false)}
