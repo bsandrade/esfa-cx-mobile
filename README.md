@@ -1,86 +1,55 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Esfa CX
 
-# Getting Started
+> Externato São Francisto de Assis Caixa é um APP que simula um programa de caixa de supermercado, com seleção de produtos, forma de pagamento e impressão de um cupom (nesse caso, não fiscal).
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+OBS:
 
-## Step 1: Start the Metro Server
+* A impressora é conectada via Bluetooth
+* Para login, o usuário precisa de permissão (verificada na API)
+* Os produtos são carregados da API
+* As compras são armazenadas localmente
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## Executando o projeto
 
-To start Metro, run the following command from the _root_ of your React Native project:
-
-```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
+1. Instlar as dependências com `yarn`
+2. Adicionar as envs necessárias no arquivo `.env`:
 ```
+GOOGLE_FIREBASE_AUTH_CLIENTID=<id_do_firebase>
+GOOGLE_FIREBASE_AUTH_APP_ID=<firebase_app_id>
+GOOGLE_FIREBASE_AUTH_PROJECT_ID=<gcp_project_id>
 
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
+ESFA_API_URL=<api_url>
+ESFA_API_TOKEN=<api_key_url>
 ```
-
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+PS: Para verificar as keys do google:
 ```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
-
-
-## GET Certs
-
-```bash
-keytool -keystore debug.keystore -list -v
+https://console.firebase.google.com/u/0/project/<project-id>/settings/general/<app>?hl=pt
 ```
+3. Executar em um terminal o metro com `yarn start`
+4. Instalar em um dispositivo android ou em um emulador android com `yarn android`
+
+## Previews
+
+### Login
+![Login Screen](./docs/prints/01-login.jpeg "Página de Login");
+
+### Home
+![Home Screen](./docs/prints/02-home.jpeg "Página Inicial");
+
+### Confirmar Produtos
+![Confirm Products Modal](./docs/prints/03-confirm-products.jpeg "Modal para confirmação dos produtos selecionados");
+
+### Checkout
+![Checkout Screen](./docs/prints/04-checkout.jpeg "Checkout");
+
+### Cupom Impresso
+![Order Photo](./docs/prints/05-order.jpeg "Cupom");
+
+### Perfil
+![Profile Screen](./docs/prints/06-profile.jpeg "Perfil");
+
+### Reimpressão de Compra
+![Reprint Purchase Modal](./docs/prints/07-reprint-purchase.jpeg "Reimpressão de compra");
+
+### Reimpressão de Compra
+![Report Screen](./docs/prints/08-reports.jpeg "Relatório das compras");
