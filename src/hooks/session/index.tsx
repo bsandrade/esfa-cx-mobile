@@ -68,7 +68,7 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
       await GoogleSignin.hasPlayServices();
       const {user} = await GoogleSignin.signIn();
       await auth({
-        id: user.id,
+        email: user.email,
       });
 
       // const credential = GoogleAuthProvider.credential(

@@ -4,10 +4,10 @@ import {apiErrorCatch} from '../utils/api-error-catch';
 import {AxiosError} from 'axios';
 
 export class AuthApi {
-  static async execute({id}: AuthRequestType): Promise<AuthResponseType> {
+  static async execute({email}: AuthRequestType): Promise<AuthResponseType> {
     const response = await api
       .post('/v1/auth/google', {
-        googleId: id,
+        email,
       })
       .catch((err: AxiosError) => {
         apiErrorCatch(err);

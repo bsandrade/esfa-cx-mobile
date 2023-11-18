@@ -1,5 +1,5 @@
 export type AuthRequestType = {
-  id: string;
+  email: string;
 };
 
 export type AuthResponseType = {
