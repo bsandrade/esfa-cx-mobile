@@ -432,6 +432,19 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       await printQRCode(
         'https://www.instagram.com/externatosaofrancisco_oficial',
       );
+      await printAlign(ALIGN.CENTER);
+      for (const product of input.products) {
+        for (let i = 0; i < product.quantity; i++) {
+          await printDivisor(2);
+          await printLines(
+            product.name,
+            formatCurrency(product.price),
+            'Favor destacar a ficha ao finalizar o pedido',
+          );
+          await printSpaces(2);
+          await printDivisor();
+        }
+      }
       await printSpaces(2);
       setIsPrinting(false);
       console.debug('[ble-print-success]');
