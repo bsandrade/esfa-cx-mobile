@@ -66,10 +66,10 @@ export const CheckoutScreen = ({
       navigation?.navigate(NavigationType.HOME);
     }
     if (route?.params.goBack === NavigationType.CONNECT) {
-      console.log('[checkout-was-connect-previous-page]');
-      validatePrinter()
-        .then(() => setPrinterIsValid(true))
-        .catch(() => setPrinterIsValid(false));
+      // console.log('[checkout-was-connect-previous-page]');
+      // validatePrinter()
+      //   .then(() => setPrinterIsValid(true))
+      //   .catch(() => setPrinterIsValid(false));
     }
   });
 

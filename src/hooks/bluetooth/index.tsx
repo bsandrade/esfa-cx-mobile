@@ -25,6 +25,8 @@ import {useToastApp} from '../toast-app';
 import {useSession} from '../session';
 import {useStorage} from '../storage';
 import {generateReportLine} from './utils/generate-report-line.utils';
+import {Alert} from 'react-native';
+import {PERMISSIONS, request} from 'react-native-permissions';
 
 type CheckDevices = {
   name: string;
@@ -75,6 +77,14 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
   const {userData} = useSession();
   const {setDevice, getDevices} = useStorage();
 
+  const handlePermissionButtonPress = async () => {
+    try {
+      await request(PERMISSIONS.ANDROID.BLUETOOTH_CONNECT);
+      await request(PERMISSIONS.ANDROID.BLUETOOTH_SCAN);
+    } catch (error: any) {
+      Alert.alert(error?.message || 'Unknown error');
+    }
+  };
   async function bootstrap() {
     const isEnabled = await BluetoothManager.checkBluetoothEnabled();
     if (!isEnabled) {
@@ -84,6 +94,11 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       console.debug('[bluetooth enabled]');
     }
   }
+
+  const a = 'x';
+  useEffect(() => {
+    handlePermissionButtonPress().then().catch();
+  }, [a]);
 
   useEffect(() => {
     bootstrap()

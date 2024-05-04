@@ -13,7 +13,6 @@ import React, {
 } from 'react';
 import {useToastApp} from '../toast-app';
 import {useSecrets} from '../secrets';
-import {useApi} from '../api';
 import {AuthException} from '@src/shared/exceptions/api-exceptions';
 
 type SessionType = {
@@ -37,7 +36,6 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
 
   const {toastError, toastSuccess, toastWarning} = useToastApp();
   const {google} = useSecrets();
-  const {auth, token} = useApi();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -53,23 +51,20 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
   });
 
   useEffect(() => {
-    if (!token && isAuthenticated) {
+    if (isAuthenticated) {
       toastWarning('Sessão expirada');
       signOut();
       setUserData(undefined);
       setIsAuthenticated(false);
     }
     //eslint-disable-next-line
-  }, [token])
+  }, [])
 
   const signIn = async () => {
     setInProgressSignIn(true);
     try {
       await GoogleSignin.hasPlayServices();
       const {user} = await GoogleSignin.signIn();
-      await auth({
-        email: user.email,
-      });
 
       // const credential = GoogleAuthProvider.credential(
       //   idToken,
@@ -78,7 +73,6 @@ const SessionProvider = ({children}: SessionProviderProps): JSX.Element => {
       // await auth().signInWithCredential(credential);
 
       // const userInfo = await GoogleSignin.signIn();
-      // console.log(user);
       const newUser: UserType = {
         email: user.email,
         name: `${user.givenName} ${user.familyName}`,

@@ -1,12 +1,8 @@
-import React, {ReactNode, createContext, useContext, useState} from 'react';
+import React, {ReactNode, createContext, useContext} from 'react';
 import {ApiContextType} from './api-context.type';
-import {AuthRequestType} from '@src/types';
-import {AuthApi, ListProductsApi} from '@src/shared/services/api';
+import {ListProductsApi} from '@src/shared/services/api';
 import {ApiException} from '@src/shared/exceptions/api-exceptions/api-exception';
-import {
-  AuthException,
-  InternalException,
-} from '@src/shared/exceptions/api-exceptions';
+import {InternalException} from '@src/shared/exceptions/api-exceptions';
 import {useToastApp} from '../toast-app';
 
 const ApiContext = createContext({} as ApiContextType);
@@ -17,14 +13,8 @@ type ApiProviderType = {
 
 const ApiProvider = ({children}: ApiProviderType): JSX.Element => {
   const {toastError, toastWarning} = useToastApp();
-  const [token, setToken] = useState<string>();
 
   const errorHandler = (input: Error): void => {
-    if (input instanceof AuthException) {
-      setToken(undefined);
-      return;
-    }
-
     if (input instanceof InternalException) {
       toastError(input.message);
       return;
@@ -39,20 +29,9 @@ const ApiProvider = ({children}: ApiProviderType): JSX.Element => {
     toastError('Ocorreu um erro, tente novamente');
   };
 
-  const auth = async (input: AuthRequestType) => {
-    try {
-      const response = await AuthApi.execute(input);
-      setToken(response.token);
-      return response;
-    } catch (err: any) {
-      errorHandler(err);
-      throw err;
-    }
-  };
-
   const listProducts = async () => {
     try {
-      return await ListProductsApi.execute(token);
+      return await ListProductsApi.execute();
     } catch (err: any) {
       errorHandler(err);
       throw err;
@@ -62,9 +41,7 @@ const ApiProvider = ({children}: ApiProviderType): JSX.Element => {
   return (
     <ApiContext.Provider
       value={{
-        auth,
         listProducts,
-        token,
       }}>
       {children}
     </ApiContext.Provider>
