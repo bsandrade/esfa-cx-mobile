@@ -16,7 +16,7 @@ import {useStorage} from '@hooks/storage';
 import {useApi} from '@src/hooks/api';
 import {LoadingModal} from '@components/Modals/LoadingModal';
 
-export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
+export const HomeScreen = ({navigation, route}: ScreenProps): JSX.Element => {
   const [showDetails, setShowDetails] = useState(false);
   const [productItems, setProductItems] = useState<ProductItemType[]>([]);
   const [isFetching, setIsFetching] = useState(false);
@@ -39,6 +39,18 @@ export const HomeScreen = ({navigation}: ScreenProps): JSX.Element => {
     }
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (route?.params?.goBack === NavigationType.CHECKOUT) {
+      setProductItems(
+        productItems.map(prod => ({
+          ...prod,
+          quantity: 0,
+        })),
+      );
+    }
+    // eslint-disable-next-line
+  }, [route?.params?.goBack]);
 
   const handleUpdateProducts = async () => {
     setIsFetching(true);
