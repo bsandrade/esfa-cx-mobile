@@ -14,7 +14,6 @@ import {
   printHeader,
   printLine,
   printLines,
-  printQRCode,
   printReportHeader,
   printSpaces,
   printerIsValid,
@@ -424,24 +423,19 @@ const BluetoothProvider = ({children}: BluetoothProviderType): JSX.Element => {
       await printDivisor(2);
       await printLine(`Operador: ${input.user}`);
       await printLine(`ID da operação:\n${input.id}`);
-      await printDivisor(2);
-      await printAlign(ALIGN.CENTER);
-      await printLine(
-        'Leia o QR Code e acesse o perfil do externato no insta:',
-      );
-      await printQRCode(
-        'https://www.instagram.com/externatosaofrancisco_oficial',
-      );
+      await printDivisor(1);
+      // await printAlign(ALIGN.CENTER);
+      // await printLine(
+      //   'Leia o QR Code e acesse o perfil do externato no insta:',
+      // );
+      // await printQRCode(
+      //   'https://www.instagram.com/externatosaofrancisco_oficial',
+      // );
       await printAlign(ALIGN.CENTER);
       for (const product of input.products) {
         for (let i = 0; i < product.quantity; i++) {
-          await printDivisor(2);
-          await printLines(
-            product.name,
-            formatCurrency(product.price),
-            'Favor destacar a ficha ao finalizar o pedido',
-          );
-          await printSpaces(2);
+          await printDivisor();
+          await printLine(`${product.name}| ${formatCurrency(product.price)}`);
           await printDivisor();
         }
       }
